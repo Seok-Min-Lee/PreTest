@@ -11,8 +11,6 @@ GameObject:
   - component: {fileID: 3313976052852523358}
   - component: {fileID: 2302216258808818027}
   - component: {fileID: 2237253120355976338}
-  - component: {fileID: 66474225471975027}
-  - component: {fileID: 6796594819694848000}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -97,7 +95,7 @@ BoxCollider:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1418506122823428224}
+  m_GameObject: {fileID: 7335509556109147236}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -110,15 +108,15 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1.5, y: 1.5, z: 0.1}
+  m_Center: {x: 0, y: 0.75, z: 0}
 --- !u!114 &6796594819694848000
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1418506122823428224}
+  m_GameObject: {fileID: 7335509556109147236}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4347baec194490a88cab1ad5d5f16dc, type: 3}
@@ -133,6 +131,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5197129553395946122}
+  - component: {fileID: 66474225471975027}
+  - component: {fileID: 6796594819694848000}
   m_Layer: 0
   m_Name: Mirror
   m_TagString: Untagged

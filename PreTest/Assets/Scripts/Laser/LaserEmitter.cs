@@ -5,6 +5,7 @@ public class LaserEmitter : MonoBehaviour
     private const int MaxReflectionCount = 10;
     private const float MaxRayDistance = 100f;
     private const float SelfCollisionOffset = 0.001f;
+    private const float FrontFaceDotThreshold = 0.9f;
 
     [SerializeField] private Transform _muzzle;
     [SerializeField] private LineRenderer _lineRenderer;
@@ -52,9 +53,10 @@ public class LaserEmitter : MonoBehaviour
 
             AddLinePosition(hit.point);
 
-            bool isFrontFaceHit = Vector3.Dot(direction, hit.normal) < 0f;
-            bool canReflect = isFrontFaceHit && reflectionCount < MaxReflectionCount
-                && hit.collider.GetComponent<MirrorController>() != null;
+            ILaserReflector reflector = hit.collider.GetComponent<ILaserReflector>();
+            bool isFrontFaceHit = reflector != null
+                && Vector3.Dot(hit.normal, reflector.ReflectiveNormal) > FrontFaceDotThreshold;
+            bool canReflect = isFrontFaceHit && reflectionCount < MaxReflectionCount;
 
             if (canReflect)
             {
