@@ -1,27 +1,26 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Renderer))]
 public class LaserReceiver : MonoBehaviour, ILaserHitReceiver
 {
     private static readonly int s_BaseColorId = Shader.PropertyToID("_BaseColor");
 
     [SerializeField] private Color _hitColor = Color.cyan;
-    [SerializeField] private Color _idleColor = Color.red;
+    [SerializeField] private Renderer _renderer;
 
-    private Renderer _renderer;
     private MaterialPropertyBlock _propertyBlock;
+    private Color _originalColor;
     private bool _isHitThisFrame;
     private bool _isActivated;
 
-    private void Awake()
+    private void Reset()
     {
-        _renderer = GetComponent<Renderer>();
-        _propertyBlock = new MaterialPropertyBlock();
+        _renderer = GetComponentInChildren<Renderer>();
     }
 
-    private void Start()
+    private void Awake()
     {
-        ApplyColor(_idleColor);
+        _propertyBlock = new MaterialPropertyBlock();
+        _originalColor = _renderer.sharedMaterial.GetColor(s_BaseColorId);
     }
 
     public void OnLaserHit()
@@ -51,7 +50,7 @@ public class LaserReceiver : MonoBehaviour, ILaserHitReceiver
         }
 
         _isActivated = false;
-        ApplyColor(_idleColor);
+        ApplyColor(_originalColor);
     }
 
     private void ApplyColor(Color color)
