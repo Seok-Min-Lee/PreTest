@@ -22,8 +22,9 @@
         - (구현 노트) 최초 로드맵의 "Raycast + Surface Normal 정렬"에서 한 차례 `FloorGrid` 기반 바닥 그리드 클릭 배치(스타크래프트 건물 배치 방식)로 좁혀졌었으나, Inspector에서 Position/Rotation을 자유 편집하는 기능을 준비하며 그리드 점유 정보가 실제 위치와 어긋나는 문제를 피하기 위해 초기 배치 자체를 다시 전체 자유 배치로 통일함. `FloorGrid.cs`는 이 과정에서 삭제.
     - 배치 모드 취소: 배치 모드 진입 중 마우스 우클릭 또는 `Esc` 키 입력 시 고스트를 숨기고 배치 모드를 즉시 종료(`MirrorPlacementController.CancelPlacement`).
     - 거울 최대 100개 제한: 그리드 점유 개수가 아니라 `PlacedMirror.ActiveCount`(정적 카운터, `Awake`/`OnDestroy`에서 증감)로 씬 전체 거울 개수를 기준으로 판정, 도달 시 `Add Mirror` 버튼 비활성화. 중첩 배치 방지는 하지 않음(자유 배치 특성상 허용).
-    - `MirrorGizmo`를 통한 선택 거울 조작: Move 핸들 드래그로 바닥/경사면 자유 이동(표면 법선 재정렬), Rotate 핸들 드래그로 현재 서 있는 표면 법선 축 기준 회전만 허용.
-        - (구현 노트) 이동/회전 드래그는 `Physics.Raycast`가 아닌 `Plane.Raycast`(평면-광선 수학 교차)로 계산해 다른 거울의 콜라이더에 드래그가 끊기지 않도록 처리. Rotation은 Yaw만 갱신해 X/Z 축은 항상 고정.
+    - `MirrorGizmo`를 통한 선택 거울 조작: 생성 시 표면 도킹과는 별개로, 선택 후 편집은 유니티 에디터 Move/Rotate 툴처럼 **축별 핸들**(Move X/Y/Z 큐브 3개 + Rotate X/Y/Z 링 3개, `GizmoHandle._axis`로 구분)로 처리. 각 핸들은 거울의 로컬 축(`transform.right`/`up`/`forward`) 기준으로만 이동/회전되어, 표면 제약 없이 정확히 그 축만 조작 가능. 색상은 유니티 관례를 따라 X=빨강/Y=초록/Z=파랑(`Assets/Materials/GizmoAxisX·Y·Z.mat`).
+        - (구현 노트) Move는 "카메라 방향과 선택된 축을 함께 포함하는 평면"에 `Plane.Raycast`로 교차시킨 뒤 그 교차점을 축 위로 투영해 그랩 지점 기준 델타만큼 이동시키는 방식(점프 없음). Rotate는 그 축을 법선으로 한 평면 위에서 시작 방향과 현재 방향의 `Vector3.SignedAngle`을 구해 회전시키는 방식 — 예전에는 이 축이 표면 법선 하나로 고정돼 있었는데, 이제는 선택한 핸들의 축으로 파라미터화됨.
+        - (구현 노트) Rotate 핸들은 회전축을 직관적으로 보여주기 위해 구체 대신 `Assets/Models/ring.fbx` 토러스 메시로 교체(재질은 기존 축 색상 그대로 유지). 유니티 임포터가 안정적 해시 기반 `fileID`(`fileIdsGeneration: 2`)를 쓰는 탓에 씬 텍스트를 직접 편집해 메시를 연결할 수 없어, `Assets/Editor/GizmoRotateHandleSetup.cs`(메뉴: Tools > Gizmo > Rotate 핸들에 Ring 메시 적용)로 에디터에서 정확히 연결. 판정용 `Collider`도 `SphereCollider`에서 `MeshCollider`(non-convex)로 교체 — convex를 켜면 링 가운데 빈 구멍이 볼록 껍질로 메워져 클릭 판정이 부정확해지므로, 레이캐스트 전용 정적 콜라이더 특성을 살려 non-convex로 실제 링 형태를 그대로 유지.
     - `Floor`/`Mirror`/`GizmoHandle` 레이어 분리로 배치·선택·레이저 레이캐스트 간 상호 간섭 방지 (`LaserEmitter`도 `GizmoHandle` 레이어를 제외하도록 처리).
 
 ### 🟢 Priority 3: UI 구조 및 양방향 동기화 (완성도 향상)

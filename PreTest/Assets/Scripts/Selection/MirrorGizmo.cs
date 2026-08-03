@@ -3,16 +3,15 @@ using UnityEngine.InputSystem;
 
 public class MirrorGizmo : MonoBehaviour
 {
-    private const int FloorLayer = 8;
-
     [SerializeField] private LayerMask _gizmoHandleLayerMask;
-    [SerializeField] private LayerMask _floorLayerMask = 1 << FloorLayer;
 
     private Camera _camera;
     private PlacedMirror _target;
     private GizmoHandleKind? _draggingHandle;
     private Plane _dragPlane;
-    private Vector3 _rotateAxis;
+    private Vector3 _dragAxis;
+    private Vector3 _moveDragStartPoint;
+    private Vector3 _moveDragStartPosition;
     private Vector3 _rotateStartDirection;
     private Quaternion _rotateStartRotation;
 
@@ -88,19 +87,45 @@ public class MirrorGizmo : MonoBehaviour
         }
 
         _draggingHandle = handle.Kind;
+        Vector3 axis = GetAxisDirection(handle.Axis);
 
-        if (_draggingHandle == GizmoHandleKind.Rotate)
+        if (_draggingHandle == GizmoHandleKind.Move)
         {
-            BeginRotateDrag();
+            BeginMoveDrag(axis);
+        }
+        else if (_draggingHandle == GizmoHandleKind.Rotate)
+        {
+            BeginRotateDrag(axis);
         }
     }
 
-    private void BeginRotateDrag()
+    private Vector3 GetAxisDirection(GizmoAxis axis)
     {
-        // 현재 서 있는 표면의 법선을 회전축으로 고정 — 경사면 위에서도 표면에 붙은 채로 돌도록.
-        _rotateAxis = _target.transform.up;
+        if (axis == GizmoAxis.X)
+        {
+            return _target.transform.right;
+        }
+
+        if (axis == GizmoAxis.Y)
+        {
+            return _target.transform.up;
+        }
+
+        return _target.transform.forward;
+    }
+
+    private void BeginMoveDrag(Vector3 axis)
+    {
+        _dragAxis = axis;
+        _moveDragStartPosition = _target.transform.position;
+        RaycastAxis(axis, _moveDragStartPosition, out _moveDragStartPoint);
+    }
+
+    private void BeginRotateDrag(Vector3 axis)
+    {
+        _dragAxis = axis;
         _rotateStartRotation = _target.transform.rotation;
-        _dragPlane = new Plane(_rotateAxis, _target.transform.position);
+        _dragPlane = new Plane(axis, _target.transform.position);
 
         if (RaycastDragPlane(out Vector3 point))
         {
@@ -110,17 +135,14 @@ public class MirrorGizmo : MonoBehaviour
 
     private void DragMove()
     {
-        Ray ray = _camera.ScreenPointToRay(Mouse.current.position.ReadValue());
-
-        if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _floorLayerMask))
+        if (!RaycastAxis(_dragAxis, _moveDragStartPosition, out Vector3 point))
         {
             return;
         }
 
-        // 직전 up 벡터 -> 새 표면 법선으로의 회전 델타만 적용해 기존 트위스트(바라보는 방향)를 유지.
-        Quaternion normalDelta = Quaternion.FromToRotation(_target.transform.up, hit.normal);
-        _target.transform.SetPositionAndRotation(hit.point, normalDelta * _target.transform.rotation);
-        transform.SetPositionAndRotation(_target.transform.position, _target.transform.rotation);
+        Vector3 delta = point - _moveDragStartPoint;
+        _target.transform.position = _moveDragStartPosition + delta;
+        transform.position = _target.transform.position;
     }
 
     private void DragRotate()
@@ -137,9 +159,35 @@ public class MirrorGizmo : MonoBehaviour
             return;
         }
 
-        float deltaAngle = Vector3.SignedAngle(_rotateStartDirection, direction.normalized, _rotateAxis);
-        _target.transform.rotation = Quaternion.AngleAxis(deltaAngle, _rotateAxis) * _rotateStartRotation;
+        float deltaAngle = Vector3.SignedAngle(_rotateStartDirection, direction.normalized, _dragAxis);
+        _target.transform.rotation = Quaternion.AngleAxis(deltaAngle, _dragAxis) * _rotateStartRotation;
         transform.rotation = _target.transform.rotation;
+    }
+
+    private bool RaycastAxis(Vector3 axis, Vector3 origin, out Vector3 pointOnAxis)
+    {
+        // 카메라 방향과 축을 함께 포함하는 평면에 레이캐스트한 뒤, 그 교차점을 축 위로 투영.
+        Vector3 toCamera = _camera.transform.position - origin;
+        Vector3 planeNormal = Vector3.Cross(axis, Vector3.Cross(toCamera, axis));
+
+        if (planeNormal.sqrMagnitude < 0.0001f)
+        {
+            pointOnAxis = origin;
+            return false;
+        }
+
+        Plane plane = new Plane(planeNormal.normalized, origin);
+        Ray ray = _camera.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+        if (!plane.Raycast(ray, out float distance))
+        {
+            pointOnAxis = origin;
+            return false;
+        }
+
+        Vector3 hitPoint = ray.GetPoint(distance);
+        pointOnAxis = origin + axis * Vector3.Dot(hitPoint - origin, axis);
+        return true;
     }
 
     private bool RaycastDragPlane(out Vector3 point)
