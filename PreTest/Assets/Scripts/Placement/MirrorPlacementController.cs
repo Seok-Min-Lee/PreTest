@@ -38,10 +38,22 @@ public class MirrorPlacementController : MonoBehaviour
         _ghost.Show();
     }
 
+    private void CancelPlacement()
+    {
+        _isPlacing = false;
+        _ghost.Hide();
+    }
+
     private void Update()
     {
         if (!_isPlacing)
         {
+            return;
+        }
+
+        if (Mouse.current.rightButton.wasPressedThisFrame || Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            CancelPlacement();
             return;
         }
 

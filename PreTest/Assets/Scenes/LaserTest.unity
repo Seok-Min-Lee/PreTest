@@ -1444,6 +1444,9 @@ MonoBehaviour:
   _gizmoHandleLayerMask:
     serializedVersion: 2
     m_Bits: 1024
+  _floorLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!120 &300073
 LineRenderer:
   serializedVersion: 2
@@ -1927,8 +1930,8 @@ SceneRoots:
   - {fileID: 100031}
   - {fileID: 100071}
   - {fileID: 100040}
-  - {fileID: 100050}
   - {fileID: 100060}
+  - {fileID: 100050}
   - {fileID: 300011}
   - {fileID: 300021}
   - {fileID: 300051}
