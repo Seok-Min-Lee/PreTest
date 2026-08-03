@@ -976,6 +976,7 @@ GameObject:
   - component: {fileID: 300051}
   - component: {fileID: 300053}
   - component: {fileID: 300054}
+  - component: {fileID: 300055}
   m_Layer: 0
   m_Name: MirrorPlacementSystem
   m_TagString: Untagged
@@ -1011,7 +1012,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _ghost: {fileID: 300062}
-  _mirrorPrefab: {fileID: 7335509556109147236, guid: 39ccb061f3420bb43a756d5a3d22fee3, type: 3}
+  _mirrorPool: {fileID: 300055}
   _addMirrorButton: {fileID: 1792104639}
   _floorLayerMask:
     serializedVersion: 2
@@ -1036,6 +1037,19 @@ MonoBehaviour:
   _gizmoHandleLayerMask:
     serializedVersion: 2
     m_Bits: 1024
+--- !u!114 &300055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3f7a1c2d4e6f8091a2b3c4d5e6f7089, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _mirrorPrefab: {fileID: 6796594819694848001, guid: 39ccb061f3420bb43a756d5a3d22fee3, type: 3}
 --- !u!1 &300060
 GameObject:
   m_ObjectHideFlags: 0

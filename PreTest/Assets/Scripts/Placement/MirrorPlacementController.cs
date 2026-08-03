@@ -8,7 +8,7 @@ public class MirrorPlacementController : MonoBehaviour
     private const int MaxMirrorCount = 100;
 
     [SerializeField] private MirrorGhost _ghost;
-    [SerializeField] private GameObject _mirrorPrefab;
+    [SerializeField] private MirrorPool _mirrorPool;
     [SerializeField] private Button _addMirrorButton;
     [SerializeField] private LayerMask _floorLayerMask;
 
@@ -91,7 +91,7 @@ public class MirrorPlacementController : MonoBehaviour
 
     private void PlaceMirror()
     {
-        Instantiate(_mirrorPrefab, _targetPosition, _targetRotation);
+        _mirrorPool.Get(_targetPosition, _targetRotation);
 
         _isPlacing = false;
         _ghost.Hide();
