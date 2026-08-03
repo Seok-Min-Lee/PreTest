@@ -5,7 +5,8 @@ using UnityEngine.UI;
 
 public class MirrorPlacementController : MonoBehaviour
 {
-    [SerializeField] private FloorGrid _floorGrid;
+    private const int MaxMirrorCount = 100;
+
     [SerializeField] private MirrorGhost _ghost;
     [SerializeField] private GameObject _mirrorPrefab;
     [SerializeField] private Button _addMirrorButton;
@@ -14,8 +15,6 @@ public class MirrorPlacementController : MonoBehaviour
     private Camera _camera;
     private bool _isPlacing;
     private bool _hasValidTarget;
-    private bool _isGridTarget;
-    private Vector2Int _targetCell;
     private Vector3 _targetPosition;
     private Quaternion _targetRotation;
 
@@ -29,7 +28,7 @@ public class MirrorPlacementController : MonoBehaviour
 
     public void BeginPlacement()
     {
-        if (_floorGrid.IsFull)
+        if (PlacedMirror.ActiveCount >= MaxMirrorCount)
         {
             return;
         }
@@ -81,22 +80,10 @@ public class MirrorPlacementController : MonoBehaviour
             return;
         }
 
-        _isGridTarget = hit.collider == _floorGrid.FloorCollider;
-
-        if (_isGridTarget)
-        {
-            _targetCell = _floorGrid.WorldToCell(hit.point);
-            _hasValidTarget = _floorGrid.IsInBounds(_targetCell) && !_floorGrid.IsOccupied(_targetCell);
-            _targetPosition = _floorGrid.CellToWorldCenter(_targetCell);
-            _targetRotation = Quaternion.identity;
-        }
-        else
-        {
-            // 그리드가 아닌 Floor 레이어 콜라이더(예: 경사면)는 격자 없이 표면 법선에 맞춰 자유 도킹.
-            _hasValidTarget = true;
-            _targetPosition = hit.point;
-            _targetRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
-        }
+        // 격자 스냅 없이, Floor 레이어의 어떤 콜라이더든 표면 법선에 맞춰 자유 도킹.
+        _hasValidTarget = true;
+        _targetPosition = hit.point;
+        _targetRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
 
         _ghost.Show();
         _ghost.SetState(_targetPosition, _targetRotation, _hasValidTarget);
@@ -104,19 +91,12 @@ public class MirrorPlacementController : MonoBehaviour
 
     private void PlaceMirror()
     {
-        GameObject instance = Instantiate(_mirrorPrefab, _targetPosition, _targetRotation);
-
-        if (_isGridTarget)
-        {
-            PlacedMirror placedMirror = instance.GetComponent<PlacedMirror>();
-            placedMirror.Initialize(_floorGrid);
-            placedMirror.SetCell(_targetCell);
-        }
+        Instantiate(_mirrorPrefab, _targetPosition, _targetRotation);
 
         _isPlacing = false;
         _ghost.Hide();
 
-        if (_floorGrid.IsFull)
+        if (PlacedMirror.ActiveCount >= MaxMirrorCount)
         {
             _addMirrorButton.interactable = false;
         }

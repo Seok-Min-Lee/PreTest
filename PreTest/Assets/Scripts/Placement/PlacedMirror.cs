@@ -2,37 +2,15 @@ using UnityEngine;
 
 public class PlacedMirror : MonoBehaviour
 {
-    private static readonly Vector2Int InvalidCell = new Vector2Int(int.MinValue, int.MinValue);
+    public static int ActiveCount { get; private set; }
 
-    private FloorGrid _floorGrid;
-
-    public Vector2Int Cell { get; private set; } = InvalidCell;
-
-    public void Initialize(FloorGrid floorGrid)
+    private void Awake()
     {
-        _floorGrid = floorGrid;
-    }
-
-    public void SetCell(Vector2Int cell)
-    {
-        ClearCell();
-        Cell = cell;
-        _floorGrid.Occupy(cell, this);
-    }
-
-    public void ClearCell()
-    {
-        if (Cell == InvalidCell)
-        {
-            return;
-        }
-
-        _floorGrid.Free(Cell);
-        Cell = InvalidCell;
+        ActiveCount++;
     }
 
     private void OnDestroy()
     {
-        ClearCell();
+        ActiveCount--;
     }
 }

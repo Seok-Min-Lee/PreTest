@@ -969,7 +969,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 300051}
-  - component: {fileID: 300052}
   - component: {fileID: 300053}
   - component: {fileID: 300054}
   m_Layer: 0
@@ -994,20 +993,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &300052
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 300050}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 99ffeafdb99344868711a5692f2f239e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _floorCollider: {fileID: 100014}
-  _cellSize: 1
 --- !u!114 &300053
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1018,9 +1003,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e8106b4bfcf14339abe96d6efaa69d95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _floorGrid: {fileID: 300052}
+  m_Name:
+  m_EditorClassIdentifier:
   _ghost: {fileID: 300062}
   _mirrorPrefab: {fileID: 7335509556109147236, guid: 39ccb061f3420bb43a756d5a3d22fee3, type: 3}
   _addMirrorButton: {fileID: 1792104639}

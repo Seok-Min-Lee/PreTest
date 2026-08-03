@@ -18,12 +18,11 @@
 > 
 - **주요 작업:**
     - `MirrorController` 프리팹 구성 (Rigidbody 제외, Collider 설정).
-    - `FloorGrid` 기반 바닥 그리드 클릭 배치 구현: 좌측 하단 `Add Mirror` 버튼 → 배치 모드 진입 → 커서가 위치한 그리드 셀에 반투명 고스트 프리뷰(배치 가능 시 초록/불가 시 빨강) 표시 → 클릭으로 확정.
-        - (구현 노트) 최초 로드맵의 "Raycast + Surface Normal 정렬 지형/벽면 스냅"은 요구사항을 구체화하는 과정에서 스타크래프트 건물 배치 방식의 "바닥 그리드 클릭 배치"로 범위가 좁혀짐. 벽면 스냅은 이번 범위에서 제외하고 수평 바닥 그리드만 지원.
-    - 경사면 Mirror 도킹 지원: `Floor` 레이어 중 `FloorGrid` 콜라이더가 아닌 비그리드 콜라이더(경사면 등)에 호버 시, 격자 스냅 없이 `hit.normal` 기반 표면 법선 정렬로 자유 배치(그리드 점유/최대 개수 제한 대상 아님).
+    - `Floor` 레이어 콜라이더 전체(평지·경사면 구분 없이)에 대해 격자 스냅 없는 자유 배치: 좌측 하단 `Add Mirror` 버튼 → 배치 모드 진입 → 커서가 위치한 지점에 `hit.normal` 기반 표면 법선 정렬 고스트 프리뷰 표시 → 클릭으로 확정.
+        - (구현 노트) 최초 로드맵의 "Raycast + Surface Normal 정렬"에서 한 차례 `FloorGrid` 기반 바닥 그리드 클릭 배치(스타크래프트 건물 배치 방식)로 좁혀졌었으나, Inspector에서 Position/Rotation을 자유 편집하는 기능을 준비하며 그리드 점유 정보가 실제 위치와 어긋나는 문제를 피하기 위해 초기 배치 자체를 다시 전체 자유 배치로 통일함. `FloorGrid.cs`는 이 과정에서 삭제.
     - 배치 모드 취소: 배치 모드 진입 중 마우스 우클릭 또는 `Esc` 키 입력 시 고스트를 숨기고 배치 모드를 즉시 종료(`MirrorPlacementController.CancelPlacement`).
-    - 거울 최대 100개 제한(`FloorGrid.IsFull`, 도달 시 `Add Mirror` 버튼 비활성화) 및 중첩 배치 방지(그리드 점유 Dictionary로 이미 점유된 셀은 배치 불가 처리).
-    - `MirrorGizmo`를 통한 선택 거울 조작: Move 핸들 드래그로 바닥 평면 자유 이동(그리드 스냅 없음, 드래그 시작 시 기존 점유 셀 해제), Rotate 핸들 드래그로 바닥 수직축(Y) 기준 회전만 허용.
+    - 거울 최대 100개 제한: 그리드 점유 개수가 아니라 `PlacedMirror.ActiveCount`(정적 카운터, `Awake`/`OnDestroy`에서 증감)로 씬 전체 거울 개수를 기준으로 판정, 도달 시 `Add Mirror` 버튼 비활성화. 중첩 배치 방지는 하지 않음(자유 배치 특성상 허용).
+    - `MirrorGizmo`를 통한 선택 거울 조작: Move 핸들 드래그로 바닥/경사면 자유 이동(표면 법선 재정렬), Rotate 핸들 드래그로 현재 서 있는 표면 법선 축 기준 회전만 허용.
         - (구현 노트) 이동/회전 드래그는 `Physics.Raycast`가 아닌 `Plane.Raycast`(평면-광선 수학 교차)로 계산해 다른 거울의 콜라이더에 드래그가 끊기지 않도록 처리. Rotation은 Yaw만 갱신해 X/Z 축은 항상 고정.
     - `Floor`/`Mirror`/`GizmoHandle` 레이어 분리로 배치·선택·레이저 레이캐스트 간 상호 간섭 방지 (`LaserEmitter`도 `GizmoHandle` 레이어를 제외하도록 처리).
 

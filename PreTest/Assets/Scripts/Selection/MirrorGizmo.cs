@@ -89,14 +89,10 @@ public class MirrorGizmo : MonoBehaviour
 
         _draggingHandle = handle.Kind;
 
-        if (_draggingHandle == GizmoHandleKind.Move)
+        if (_draggingHandle == GizmoHandleKind.Rotate)
         {
-            // 자유 이동 사양: 드래그 시작 시 기존 그리드 점유를 해제해야 다른 배치가 그 셀을 다시 쓸 수 있음.
-            _target.ClearCell();
-            return;
+            BeginRotateDrag();
         }
-
-        BeginRotateDrag();
     }
 
     private void BeginRotateDrag()
