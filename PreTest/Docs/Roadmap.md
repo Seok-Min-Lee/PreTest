@@ -12,15 +12,18 @@
     - `ILaserHitReceiver` 인터페이스 정의 및 `LaserReceiver` 구현 (`LateUpdate` 기반 `isHitThisFrame` 자동 복귀).
 - **목표:** 거울이 없어도 레이저가 벽에 부딪혀 꺾이고 수신기를 켰다 끄는 기본 동작이 완벽히 작동하는지 확인.
 
-### 🟡 Priority 2: 거울 배치 및 조작 시스템 (핵심 UX)
+### 🟡 Priority 2: 거울 배치 및 조작 시스템 (핵심 UX) — ✅ 완료
 
 > **중요도:** 상 (사용자가 직접 상호작용하는 핵심 기능)
 > 
 - **주요 작업:**
     - `MirrorController` 프리팹 구성 (Rigidbody 제외, Collider 설정).
-    - Raycast + Surface Normal 정렬을 이용한 지형/벽면 스냅 배치 시스템 구현.
-    - 거울 최대 100개 제한 로직 및 중첩(Overlap) 배치 방지 예외 처리.
-    - Gizmo 드래그를 통한 표면 수직축 기준 회전 기능 구현.
+    - `FloorGrid` 기반 바닥 그리드 클릭 배치 구현: 좌측 하단 `Add Mirror` 버튼 → 배치 모드 진입 → 커서가 위치한 그리드 셀에 반투명 고스트 프리뷰(배치 가능 시 초록/불가 시 빨강) 표시 → 클릭으로 확정.
+        - (구현 노트) 최초 로드맵의 "Raycast + Surface Normal 정렬 지형/벽면 스냅"은 요구사항을 구체화하는 과정에서 스타크래프트 건물 배치 방식의 "바닥 그리드 클릭 배치"로 범위가 좁혀짐. 벽면 스냅은 이번 범위에서 제외하고 수평 바닥 그리드만 지원.
+    - 거울 최대 100개 제한(`FloorGrid.IsFull`, 도달 시 `Add Mirror` 버튼 비활성화) 및 중첩 배치 방지(그리드 점유 Dictionary로 이미 점유된 셀은 배치 불가 처리).
+    - `MirrorGizmo`를 통한 선택 거울 조작: Move 핸들 드래그로 바닥 평면 자유 이동(그리드 스냅 없음, 드래그 시작 시 기존 점유 셀 해제), Rotate 핸들 드래그로 바닥 수직축(Y) 기준 회전만 허용.
+        - (구현 노트) 이동/회전 드래그는 `Physics.Raycast`가 아닌 `Plane.Raycast`(평면-광선 수학 교차)로 계산해 다른 거울의 콜라이더에 드래그가 끊기지 않도록 처리. Rotation은 Yaw만 갱신해 X/Z 축은 항상 고정.
+    - `Floor`/`Mirror`/`GizmoHandle` 레이어 분리로 배치·선택·레이저 레이캐스트 간 상호 간섭 방지 (`LaserEmitter`도 `GizmoHandle` 레이어를 제외하도록 처리).
 
 ### 🟢 Priority 3: UI 구조 및 양방향 동기화 (완성도 향상)
 
