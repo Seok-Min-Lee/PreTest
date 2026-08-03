@@ -13,8 +13,11 @@ public class MirrorPlacementController : MonoBehaviour
 
     private Camera _camera;
     private bool _isPlacing;
-    private bool _hasValidCell;
-    private Vector2Int _hoveredCell;
+    private bool _hasValidTarget;
+    private bool _isGridTarget;
+    private Vector2Int _targetCell;
+    private Vector3 _targetPosition;
+    private Quaternion _targetRotation;
 
     public bool IsPlacing => _isPlacing;
 
@@ -47,40 +50,56 @@ public class MirrorPlacementController : MonoBehaviour
             return;
         }
 
-        UpdateHoveredCell();
+        UpdateHoveredTarget();
 
-        if (_hasValidCell && Mouse.current.leftButton.wasPressedThisFrame)
+        if (_hasValidTarget && Mouse.current.leftButton.wasPressedThisFrame)
         {
             PlaceMirror();
         }
     }
 
-    private void UpdateHoveredCell()
+    private void UpdateHoveredTarget()
     {
         Ray ray = _camera.ScreenPointToRay(Mouse.current.position.ReadValue());
 
         if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _floorLayerMask))
         {
-            _hasValidCell = false;
+            _hasValidTarget = false;
             _ghost.Hide();
             return;
         }
 
-        _hoveredCell = _floorGrid.WorldToCell(hit.point);
-        _hasValidCell = _floorGrid.IsInBounds(_hoveredCell) && !_floorGrid.IsOccupied(_hoveredCell);
+        _isGridTarget = hit.collider == _floorGrid.FloorCollider;
+
+        if (_isGridTarget)
+        {
+            _targetCell = _floorGrid.WorldToCell(hit.point);
+            _hasValidTarget = _floorGrid.IsInBounds(_targetCell) && !_floorGrid.IsOccupied(_targetCell);
+            _targetPosition = _floorGrid.CellToWorldCenter(_targetCell);
+            _targetRotation = Quaternion.identity;
+        }
+        else
+        {
+            // 그리드가 아닌 Floor 레이어 콜라이더(예: 경사면)는 격자 없이 표면 법선에 맞춰 자유 도킹.
+            _hasValidTarget = true;
+            _targetPosition = hit.point;
+            _targetRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+        }
 
         _ghost.Show();
-        _ghost.SetState(_floorGrid.CellToWorldCenter(_hoveredCell), _hasValidCell);
+        _ghost.SetState(_targetPosition, _targetRotation, _hasValidTarget);
     }
 
     private void PlaceMirror()
     {
-        Vector3 spawnPosition = _floorGrid.CellToWorldCenter(_hoveredCell);
-        GameObject instance = Instantiate(_mirrorPrefab, spawnPosition, Quaternion.identity);
+        GameObject instance = Instantiate(_mirrorPrefab, _targetPosition, _targetRotation);
 
-        PlacedMirror placedMirror = instance.GetComponent<PlacedMirror>();
-        placedMirror.Initialize(_floorGrid);
-        placedMirror.SetCell(_hoveredCell);
+        if (_isGridTarget)
+        {
+            PlacedMirror placedMirror = instance.GetComponent<PlacedMirror>();
+            placedMirror.Initialize(_floorGrid);
+            placedMirror.SetCell(_targetCell);
+        }
 
         _isPlacing = false;
         _ghost.Hide();

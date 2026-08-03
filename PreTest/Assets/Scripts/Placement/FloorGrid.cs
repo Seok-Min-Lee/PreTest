@@ -13,6 +13,7 @@ public class FloorGrid : MonoBehaviour
 
     public int OccupiedCount => _occupied.Count;
     public bool IsFull => _occupied.Count >= MaxMirrorCount;
+    public Collider FloorCollider => _floorCollider;
 
     private void Reset()
     {

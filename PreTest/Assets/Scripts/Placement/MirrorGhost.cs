@@ -20,9 +20,9 @@ public class MirrorGhost : MonoBehaviour
         _propertyBlock = new MaterialPropertyBlock();
     }
 
-    public void SetState(Vector3 worldPosition, bool isValid)
+    public void SetState(Vector3 worldPosition, Quaternion worldRotation, bool isValid)
     {
-        transform.position = worldPosition;
+        transform.SetPositionAndRotation(worldPosition, worldRotation);
 
         _propertyBlock.SetColor(s_BaseColorId, isValid ? _validColor : _invalidColor);
         _renderer.SetPropertyBlock(_propertyBlock);

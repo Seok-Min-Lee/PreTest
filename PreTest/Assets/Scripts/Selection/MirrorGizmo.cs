@@ -3,12 +3,18 @@ using UnityEngine.InputSystem;
 
 public class MirrorGizmo : MonoBehaviour
 {
+    private const int FloorLayer = 8;
+
     [SerializeField] private LayerMask _gizmoHandleLayerMask;
+    [SerializeField] private LayerMask _floorLayerMask = 1 << FloorLayer;
 
     private Camera _camera;
     private PlacedMirror _target;
     private GizmoHandleKind? _draggingHandle;
     private Plane _dragPlane;
+    private Vector3 _rotateAxis;
+    private Vector3 _rotateStartDirection;
+    private Quaternion _rotateStartRotation;
 
     private void Awake()
     {
@@ -82,27 +88,43 @@ public class MirrorGizmo : MonoBehaviour
         }
 
         _draggingHandle = handle.Kind;
-        _dragPlane = new Plane(Vector3.up, _target.transform.position);
 
         if (_draggingHandle == GizmoHandleKind.Move)
         {
             // 자유 이동 사양: 드래그 시작 시 기존 그리드 점유를 해제해야 다른 배치가 그 셀을 다시 쓸 수 있음.
             _target.ClearCell();
+            return;
+        }
+
+        BeginRotateDrag();
+    }
+
+    private void BeginRotateDrag()
+    {
+        // 현재 서 있는 표면의 법선을 회전축으로 고정 — 경사면 위에서도 표면에 붙은 채로 돌도록.
+        _rotateAxis = _target.transform.up;
+        _rotateStartRotation = _target.transform.rotation;
+        _dragPlane = new Plane(_rotateAxis, _target.transform.position);
+
+        if (RaycastDragPlane(out Vector3 point))
+        {
+            _rotateStartDirection = (point - _target.transform.position).normalized;
         }
     }
 
     private void DragMove()
     {
-        if (!RaycastDragPlane(out Vector3 point))
+        Ray ray = _camera.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+        if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _floorLayerMask))
         {
             return;
         }
 
-        Vector3 position = _target.transform.position;
-        position.x = point.x;
-        position.z = point.z;
-        _target.transform.position = position;
-        transform.position = position;
+        // 직전 up 벡터 -> 새 표면 법선으로의 회전 델타만 적용해 기존 트위스트(바라보는 방향)를 유지.
+        Quaternion normalDelta = Quaternion.FromToRotation(_target.transform.up, hit.normal);
+        _target.transform.SetPositionAndRotation(hit.point, normalDelta * _target.transform.rotation);
+        transform.SetPositionAndRotation(_target.transform.position, _target.transform.rotation);
     }
 
     private void DragRotate()
@@ -119,9 +141,8 @@ public class MirrorGizmo : MonoBehaviour
             return;
         }
 
-        // 바닥 수직축(Y) 기준 Yaw만 갱신 — X/Z 회전은 절대 건드리지 않아 항상 바닥에 수직으로 서 있음.
-        float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-        _target.transform.rotation = Quaternion.Euler(0f, angle, 0f);
+        float deltaAngle = Vector3.SignedAngle(_rotateStartDirection, direction.normalized, _rotateAxis);
+        _target.transform.rotation = Quaternion.AngleAxis(deltaAngle, _rotateAxis) * _rotateStartRotation;
         transform.rotation = _target.transform.rotation;
     }
 
