@@ -6,9 +6,13 @@ public class LaserEmitter : MonoBehaviour
     private const float MaxRayDistance = 100f;
     private const float SelfCollisionOffset = 0.001f;
     private const float FrontFaceDotThreshold = 0.9f;
+    private const int GizmoHandleLayer = 10;
 
     [SerializeField] private Transform _muzzle;
     [SerializeField] private LineRenderer _lineRenderer;
+
+    // GizmoHandle 레이어(Mirror 조작용 기즈모)는 퍼즐 판정과 무관하므로 레이저 충돌에서 제외.
+    [SerializeField] private LayerMask _hittableLayers = ~(1 << GizmoHandleLayer);
 
     private readonly Vector3[] _linePositions = new Vector3[MaxReflectionCount + 2];
     private int _linePositionCount;
@@ -45,7 +49,7 @@ public class LaserEmitter : MonoBehaviour
 
         for (int reflectionCount = 0; reflectionCount <= MaxReflectionCount; reflectionCount++)
         {
-            if (!Physics.Raycast(origin, direction, out RaycastHit hit, MaxRayDistance))
+            if (!Physics.Raycast(origin, direction, out RaycastHit hit, MaxRayDistance, _hittableLayers))
             {
                 AddLinePosition(origin + direction * MaxRayDistance);
                 return;
