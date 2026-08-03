@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class MirrorGizmo : MonoBehaviour
@@ -6,6 +6,8 @@ public class MirrorGizmo : MonoBehaviour
     [SerializeField] private LayerMask _gizmoHandleLayerMask;
 
     private Camera _camera;
+    private GizmoHandle[] _handles;
+    private GizmoHandleKind _mode = GizmoHandleKind.Move;
     private PlacedMirror _target;
     private GizmoHandleKind? _draggingHandle;
     private Plane _dragPlane;
@@ -18,6 +20,7 @@ public class MirrorGizmo : MonoBehaviour
     private void Awake()
     {
         _camera = Camera.main;
+        _handles = GetComponentsInChildren<GizmoHandle>(true);
     }
 
     public void Attach(PlacedMirror target)
@@ -25,6 +28,7 @@ public class MirrorGizmo : MonoBehaviour
         _target = target;
         transform.SetPositionAndRotation(target.transform.position, target.transform.rotation);
         gameObject.SetActive(true);
+        ApplyMode();
     }
 
     public void Detach()
@@ -41,11 +45,48 @@ public class MirrorGizmo : MonoBehaviour
             return;
         }
 
+        HandleModeInput();
         HandleDragInput();
 
         if (_draggingHandle == null)
         {
             transform.SetPositionAndRotation(_target.transform.position, _target.transform.rotation);
+        }
+    }
+
+    private void HandleModeInput()
+    {
+        if (_draggingHandle != null)
+        {
+            return;
+        }
+
+        if (Keyboard.current.wKey.wasPressedThisFrame)
+        {
+            SetMode(GizmoHandleKind.Move);
+        }
+        else if (Keyboard.current.eKey.wasPressedThisFrame)
+        {
+            SetMode(GizmoHandleKind.Rotate);
+        }
+    }
+
+    private void SetMode(GizmoHandleKind mode)
+    {
+        if (_mode == mode)
+        {
+            return;
+        }
+
+        _mode = mode;
+        ApplyMode();
+    }
+
+    private void ApplyMode()
+    {
+        foreach (GizmoHandle handle in _handles)
+        {
+            handle.gameObject.SetActive(handle.Kind == _mode);
         }
     }
 

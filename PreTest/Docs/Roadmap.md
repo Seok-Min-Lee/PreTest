@@ -25,6 +25,7 @@
     - `MirrorGizmo`를 통한 선택 거울 조작: 생성 시 표면 도킹과는 별개로, 선택 후 편집은 유니티 에디터 Move/Rotate 툴처럼 **축별 핸들**(Move X/Y/Z 큐브 3개 + Rotate X/Y/Z 링 3개, `GizmoHandle._axis`로 구분)로 처리. 각 핸들은 거울의 로컬 축(`transform.right`/`up`/`forward`) 기준으로만 이동/회전되어, 표면 제약 없이 정확히 그 축만 조작 가능. 색상은 유니티 관례를 따라 X=빨강/Y=초록/Z=파랑(`Assets/Materials/GizmoAxisX·Y·Z.mat`).
         - (구현 노트) Move는 "카메라 방향과 선택된 축을 함께 포함하는 평면"에 `Plane.Raycast`로 교차시킨 뒤 그 교차점을 축 위로 투영해 그랩 지점 기준 델타만큼 이동시키는 방식(점프 없음). Rotate는 그 축을 법선으로 한 평면 위에서 시작 방향과 현재 방향의 `Vector3.SignedAngle`을 구해 회전시키는 방식 — 예전에는 이 축이 표면 법선 하나로 고정돼 있었는데, 이제는 선택한 핸들의 축으로 파라미터화됨.
         - (구현 노트) Rotate 핸들은 회전축을 직관적으로 보여주기 위해 구체 대신 `Assets/Models/ring.fbx` 토러스 메시로 교체(재질은 기존 축 색상 그대로 유지). 유니티 임포터가 안정적 해시 기반 `fileID`(`fileIdsGeneration: 2`)를 쓰는 탓에 씬 텍스트를 직접 편집해 메시를 연결할 수 없어, `Assets/Editor/GizmoRotateHandleSetup.cs`(메뉴: Tools > Gizmo > Rotate 핸들에 Ring 메시 적용)로 에디터에서 정확히 연결. 판정용 `Collider`도 `SphereCollider`에서 `MeshCollider`(non-convex)로 교체 — convex를 켜면 링 가운데 빈 구멍이 볼록 껍질로 메워져 클릭 판정이 부정확해지므로, 레이캐스트 전용 정적 콜라이더 특성을 살려 non-convex로 실제 링 형태를 그대로 유지.
+        - (구현 노트) Move 핸들(원점 기준 오프셋 배치)과 Rotate 핸들(원점을 감싸는 링)이 동시에 노출되면 위치가 겹쳐 레이캐스트 판정이 꼬일 수 있어, 유니티 에디터의 `W`(Move)/`E`(Rotate) 단축키처럼 `MirrorGizmo._mode` 하나로 두 세트 중 한쪽만 활성화하도록 분리. 드래그 중(`_draggingHandle != null`)에는 입력을 무시해 조작 도중 모드가 바뀌지 않도록 함.
     - `Floor`/`Mirror`/`GizmoHandle` 레이어 분리로 배치·선택·레이저 레이캐스트 간 상호 간섭 방지 (`LaserEmitter`도 `GizmoHandle` 레이어를 제외하도록 처리).
 
 ### 🟢 Priority 3: UI 구조 및 양방향 동기화 (완성도 향상)
