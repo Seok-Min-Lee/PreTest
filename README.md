@@ -110,12 +110,12 @@ Assets/Scripts/
 
 ## 아키텍처 설계
 
-핵심 결정들만 요약하며, 각 결정의 배경·트레이드오프·왜 다른 대안을 기각했는지는 `Docs/ImplementationNotes.md`에 자세히 기록되어 있습니다(`Docs/Roadmap.md`는 무엇을 했는지, `ImplementationNotes.md`는 왜 그렇게 했는지를 담당).
+핵심 내용들을 정리하며, [로드맵](https://github.com/Seok-Min-Lee/PreTest/blob/main/PreTest/Docs/Roadmap.md)에는 무엇을 구현하는지, [구현 노트](https://github.com/Seok-Min-Lee/PreTest/blob/main/PreTest/Docs/ImplementationNotes.md) 에는 개발 과정이 자세히 기록되어 있습니다
 
-1. **인터페이스로 레이저 로직을 분리** — `LaserEmitter`는 구체적인 `Mirror`나 `Receiver` 타입을 몰라도 되도록 `ILaserReflector`(반사체가 정의하는 정면 벡터)와 `ILaserHitReceiver`(피격 콜백)에만 의존. 반사체/수신체 종류가 늘어나도 `LaserEmitter`는 수정할 필요가 없음.
-2. **오브젝트 풀링** — `MirrorPool`이 활성 거울은 `List`, 비활성 거울은 `Queue`로 관리해 `Instantiate`/`Destroy` 대신 `SetActive`로 재사용. `PlacedMirror.ActiveCount`가 이 풀과 별개로 재사용 시점(`OnEnable`/`OnDisable`)마다 개수를 집계.
-3. **Raycast 기반 자유 배치** — 격자 스냅 없이 `Floor` 레이어의 어떤 콜라이더든 클릭 지점의 표면 법선에 맞춰 배치. 최초 배치 시에는 Floor에 도킹되도록하고 이후에는 자유롭게 Transform 수정 가능. `Floor`/`Mirror`/`GizmoHandle` 레이어를 분리해 배치·선택·레이저 레이캐스트가 서로 간섭하지 않도록 함.
-4. **이벤트 기반 상태 전파** — 컴포넌트끼리 결합도를 낮추기 위해 직접 참조해 메서드를 호출하는 대신 이벤트를 발행/구독하는 방식으로 연결(모드 전환, 선택 변경, 기즈모 모드, 활성 개수, 배치 한도 도달 등). `GameManager.Mode`/`MirrorGizmo.Mode`처럼 앱 전역에서 반복 참조되는 상태는 `PlacedMirror.ActiveCount`와 같은 방식으로 `static`으로 노출해, 소비하는 쪽이 매번 인스턴스 참조를 연결하지 않아도 되게 함.
-5. **설정값 중앙화** — 레이저 최대 반사 횟수, 거울 최대 배치 개수처럼 여러 클래스가 참조하는 값은 `GameConfig`(`ScriptableObject`, `Resources` 폴더에 두고 정적 싱글톤으로 로드) 하나로 모아, 값 하나만 바꾸면 모든 참조처에 반영되고 별도 필드 연결도 필요 없게 함.
-6. **데이터 영속성** — `SaveManager`가 `JsonUtility`로 배치 정보를 저장. 불러오기는 버튼이 아니라 앱 실행 시 항상 거치는 부트스트랩 씬 `Init`의 `LoadManager`(재사용 가능한 `MonoSingleton<T>` 기반 `DontDestroyOnLoad` 싱글톤)가 처리하고, 파싱 결과를 들고 게임 씬으로 넘어가 `GameManager`가 실제 스폰을 담당.
-7. **안전장치** — 레이저 자기 충돌 방지 오프셋, `ILaserReflector.ReflectiveNormal` 기반 앞/뒷면 판별(볼록 콜라이더는 항상 진입면만 히트되므로 단순 Dot 비교로는 구분 불가), `InputFocusGuard`로 InputField 편집 중 키보드 단축키(W/E/Esc/Delete)가 오작동하지 않도록 방지.
+1. **인터페이스 분리** — `ILaserReflector`(반사체가 정의하는 정면 벡터)와 `ILaserHitReceiver`(피격 콜백)에만 의존. 
+2. **오브젝트 풀링** — `MirrorPool`이 활성된 오브젝트는 `List`, 비활성된 오브젝트는 `Queue`로 관리하며 재사용. 
+3. **Raycast 기반 자유 배치** — 표면 법선 맞춤 도킹 및 Gizmo 수정 지원. 레이어 분리로 Raycast 간섭 방지.
+4. **이벤트 기반 상태 전파** — 직접 참조 없는 발행/구독(Pub/Sub) 패턴을 적용하여 컴포넌트 간 결합도를 낮추고 인스턴스 의존성을 제거함.
+5. **설정값 중앙화** — 주요 전역 설정값을 GameConfig(ScriptableObject)로 통합. Resources 기반 정적 싱글톤으로 로드하여 중앙 집중식 데이터 관리 및 일괄 수정 환경 구축.
+6. **데이터 영속성** — `JSON` 포맷 기반 배치 데이터 입출력 구현 및 런타임-데이터 레이어 분리
+7. **안전장치** — `ILaserReflector.ReflectiveNormal` 기반 앞/뒷면 판별, InputField 편집 중 키보드 단축키 오작동 방지 등.
