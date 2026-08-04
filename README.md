@@ -39,10 +39,17 @@ Edit. 2025-12-17
 - 화면 우측 하단에 `Edit`/`Play` 버튼으로 전환. 좌측 상단에 현재 모드가 표시됨.
 - `Play` 모드에서는 거울 선택과 Inspector 조회만 가능하고, `Edit` 모드에서는 배치·이동·회전·삭제까지 가능함.
 
+| Edit 모드 | Play 모드 |
+|---|---|
+| ![Edit 모드](PreTest/Docs/Previews/preview-mode-edit.png) | ![Play 모드](PreTest/Docs/Previews/preview-mode-play.png) |
+
 **거울 배치 (Edit 모드)**
 - `Add Mirror` 버튼 → 배치 모드 진입 → `Floor` 레이어 위 아무 곳이나 클릭하면 표면 법선에 맞춰 배치
 - 배치 중 마우스 우클릭 또는 `Esc`로 취소.
 - 최대 배치 개수에 도달하면 추가 배치가 불가능함.
+
+![거울 배치 1](PreTest/Docs/Previews/preview-batch-mirror-1.gif)
+![거울 배치 2](PreTest/Docs/Previews/preview-batch-mirror-2.gif)
 
 **거울 조작 (Edit 모드)**
 - 배치된 거울을 클릭하면 선택되고, 우측 Inspector 패널에 Name/Position/Rotation/Description이 표시됨 
@@ -63,10 +70,14 @@ Edit. 2025-12-17
 - 이동: 휠 버튼(가운데 클릭) 드래그
 - 리셋: 좌측 상단 카메라 아이콘 버튼
 
+![카메라 조작](PreTest/Docs/Previews/preview-camera-manipulation.gif)
+
 **레이저**
 - 초록색: Receiver에 도달
 - 빨간색: 최대 반사 횟수까지 도달하고도 Receiver에 도달하지 못한 경우
 - 노란색: 아직 반사 기회가 남아있는 상태
+
+![레이저 색상 피드백](PreTest/Docs/Previews/preview-laser-color.gif)
 
 **기타**
 - 우측 상단 `Exit` 버튼: 애플리케이션 종료(에디터에서 테스트 중이면 Play 모드만 종료).
