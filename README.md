@@ -1,6 +1,11 @@
+
 # Deepfine 입사 지원자 대상 사전 과제
+
 Edit. 2025-12-17
 
+<details>
+<summary>과제 내용</summary>
+<div markdown="1">
 
 ## 1. 개요
 최근 AI 활용이 보편화되면서 단순 코드 완성도만으로는 평가가 어렵습니다.  
@@ -28,6 +33,10 @@ Edit. 2025-12-17
 ## 4. 제출물
 - 본 Git Repo를 Fork해서 본인 계정의 Git에서 수행 후 링크 공유.
 - README를 통해 간단한 구조 설명 및 조작 방법 공유
+</div>
+</details>
+
+
 
 ---
 
