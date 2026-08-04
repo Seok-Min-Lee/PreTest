@@ -87,3 +87,33 @@ Edit 모드라도 선택된 거울이 없으면 Inspector InputField를 편집 �
 처음엔 고정 피벗을 중심으로 도는 오빗 카메라를 검토했으나, 피벗에 종속되면 나중에 다른 조작(이동 등)을 얹을 때 "항상 피벗을 바라보기" 제약을 다시 풀어야 해서 확장성이 떨어짐. 대신 `CameraViewController`는 카메라 자신의 로컬 회전만 다룸 — 우클릭 드래그 중 마우스 델타로 `yaw`/`pitch`를 매 프레임 누적하고, 그 값으로 `Quaternion.Euler(pitch, yaw, 0)`를 새로 세팅하는 방식(`transform.Rotate` 반복 호출은 부동소수점 오차로 롤이 누적되는 문제가 있어 피함). `pitch`는 뒤집히지 않게 `_minPitch`/`_maxPitch`(-80~80)로 clamp. 피벗이 없어지므로 Zoom도 "피벗까지 거리 좁히기"가 아니라 휠 입력만큼 카메라 자신의 `transform.forward` 방향으로 전진/후진(dolly)하는 방식으로 처리. 이동(WASD 등)은 이번 범위에서 제외. `EventSystem.current.IsPointerOverGameObject()`를 `Update()` 최상단에서 한 번만 확인해 Inspector 패널 위에서는 회전·줌 모두 반응하지 않도록 함. Edit/Play 모드와 무관하게 항상 동작(지형 관람용이라 게이팅 불필요).
 
 이동 없이 회전+dolly만 있다 보니 사용자가 지형에서 완전히 벗어난 뷰로 가버리면 되돌아올 방법이 없는 문제가 있어, `Awake()`에서 씬에 배치된 초기 Position/Rotation을 그대로 기억해뒀다가 복귀시키는 `public OnClickResetView()`를 추가. 좌측 상단 `Camera Reset Button`에 연결했는데, 이 버튼 GameObject는 씬에 Image만 추가되고 실제 `Button` 컴포넌트가 빠져 있어서 클릭이 전혀 안 되는 상태였음 — `UnityEngine.UI.Button` 컴포넌트를 추가하고 기존 아이콘 Image를 `m_TargetGraphic`으로 연결한 뒤, 다른 버튼들과 같은 방침대로 `OnClick`을 씬에서 `CameraViewController.OnClickResetView`로 직접 연결.
+
+### MirrorPool 컬렉션 구조 — 활성 List + 비활성 Queue
+
+기존엔 `MirrorPool`이 비활성 거울만 `Stack<PlacedMirror>`로 들고 있어서, Save가 필요로 하는 "지금 배치된 거울 전체 순회"가 불가능했음. 비활성 재사용 방식을 LIFO(`Stack`)에서 FIFO(`Queue`)로 바꾸고, 활성 거울을 별도 `List<PlacedMirror>`로 함께 추적해 `ActiveMirrors`로 읽기 전용 노출 — `PlacedMirror.ActiveCount`(개수만 세는 기존 정적 카운터)와 역할을 분리해 "몇 개인지"와 "누가 활성 상태인지"를 각각 책임지도록 함.
+
+### Mirror Name/Description 필드화와 `gameObject.name` 반영
+
+`DisplayName`/`Description`을 자동 프로퍼티에서 `[SerializeField]` 백킹 필드로 전환(Save 직렬화 대상이자 인스펙터 노출 목적). `DisplayName` setter가 `gameObject.name`도 함께 갱신하도록 해 Hierarchy에서 배치된 거울을 이름으로 바로 식별 가능하게 함 — 값이 비어 있으면 `"Mirror"`로 폴백해 빈 이름이 노출되지 않도록 함. `OnEnable` 초기화 시 `DisplayName`은 `"Mirror {번호}"` 형태로 채우는데, 이 번호는 삭제 후 재배치해도 겹치지 않도록 감소 없이 계속 증가만 하는 정적 카운터(`s_NextDisplayNumber`)에서 옴. `Description`은 자동으로 채울 의미 있는 기본값이 없어 빈 문자열 유지.
+
+### JsonUtility vs Newtonsoft.Json
+
+저장 스키마(`MirrorSaveData`)가 `Vector3`/`Quaternion`/`string`으로만 구성된 플랫한 DTO 리스트라 `JsonUtility`만으로 충분하다고 판단. `JsonUtility`는 `Vector3`/`Quaternion`을 컨버터 없이 그대로 직렬화하는 반면, Newtonsoft는 이런 상황에서 이점 없이 별도 패키지 의존성만 늘어남 — Dictionary·다형성 등 복잡한 스키마가 필요해지면 그때 재검토.
+
+### Load를 버튼이 아닌 부트스트랩 씬(`Init`)에서 처리
+
+Load는 "앱 실행 시 항상 최초로 거치는 화면"이라는 요구사항 때문에 Save/Clear와 달리 버튼 클릭이 아니라 별도 씬 `Assets/Scenes/Init.unity`의 `LoadManager.Awake()`에서 처리. 저장 파일이 없거나(`File.Exists` 실패) 파싱이 깨지면(`JsonUtility.FromJson` 예외) 둘 다 `null`로 귀결시켜 예외 없이 빈 상태로 게임 씬에 진입 — 저장 파일은 사용자가 직접 건드릴 수도 있는 외부 입력 경계이므로 방어적으로 처리.
+
+### `MonoSingleton<T>`과 씬 간 데이터 전달
+
+`Init` → `LaserTest` 전환 시 Unity가 씬 상태를 초기화하는 문제를, 별도의 정적 홀더 클래스 대신 `LoadManager` 자신을 `DontDestroyOnLoad` 싱글톤으로 만들어 해결 — 파싱된 데이터를 들고 씬 전환에서 살아남은 뒤 `GameManager`가 `LoadManager.Instance.LoadedData`를 읽어가는 구조. 재사용 가능하도록 제네릭 `MonoSingleton<T>` 베이스 클래스로 분리(`Assets/Scripts/MonoSingleton.cs`). `Destroy()`가 프레임 끝까지 지연 실행되는 특성 때문에, 하위 클래스가 실제 동작 코드를 실행하기 전 `Instance != this` 체크로 자신이 중복 인스턴스로 걸러졌는지 반드시 확인. 처음엔 읽은 뒤 값을 비우는 `ConsumeLoadedData()`로 1회성 소비를 보장했으나, 현재 코드베이스엔 `LaserTest`를 `Init` 없이 재로드하는 경로 자체가 없어 그 방어가 실제로 걸리는 상황이 없다고 판단해 걷어내고 단순 읽기 전용 프로퍼티로 되돌림(YAGNI) — 재시작 기능이 추가되면 재검토.
+
+실제 거울 스폰(`MirrorPool.Get()` 호출) 주체는 `GameManager.Start()`로 결정 — `MirrorPlacementController.PlaceMirror()`가 이미 쓰는 `Get()` 패턴과 `MaxMirrorCount` 캡을 그대로 재사용.
+
+### Save/Load 모드 게이팅을 하지 않은 이유
+
+`SaveManager.OnClickSave()`는 처음엔 다른 편집 액션처럼 Edit 모드 체크를 넣었으나, Save 버튼이 Play/Edit 모드 구분 없이 상시 노출되는 UI로 확정되면서 제거 — Save는 현재 상태를 읽기만 하는 비파괴적 동작이라 모드와 무관하게 항상 허용해도 무방하고, 덕분에 `GameManager` 의존성도 사라짐. Load는 애초에 버튼이 아니라 부트스트랩 시점에 1회 자동 실행되므로 모드 개념 자체가 관여하지 않음.
+
+### 에디터에서 매번 `Init`을 거쳐야 하는 번거로움
+
+`Init`이 항상 최초 진입 씬이 되도록 Build Settings에 0번으로 등록했지만, 에디터에서 `LaserTest`를 열어놓고 작업하다 Play를 누르면 `Init`을 거치지 않아 Load 흐름이 테스트되지 않는 문제가 있음. `Assets/Editor/PlayModeStartSceneSetup.cs`(`[InitializeOnLoad]` 정적 생성자)로 `EditorSceneManager.playModeStartScene`을 자동으로 `Init.unity`로 지정해 해결 — 에디터 UI를 수동으로 찾아 설정하는 대신 스크립트로 커밋해두면, 이 프로젝트를 처음 여는 사람도 별도 설정 없이 빌드와 동일한 진입 흐름(`Init` → `LaserTest`)으로 테스트하게 됨. 이미 값이 설정돼 있으면 덮어쓰지 않아 수동으로 다른 씬을 지정해둔 경우를 존중.

@@ -5,7 +5,10 @@ public class MirrorPool : MonoBehaviour
 {
     [SerializeField] private PlacedMirror _mirrorPrefab;
 
-    private readonly Stack<PlacedMirror> _inactiveMirrors = new Stack<PlacedMirror>();
+    private readonly List<PlacedMirror> _activeMirrors = new List<PlacedMirror>();
+    private readonly Queue<PlacedMirror> _inactiveMirrors = new Queue<PlacedMirror>();
+
+    public IReadOnlyList<PlacedMirror> ActiveMirrors => _activeMirrors;
 
     public PlacedMirror Get(Vector3 position, Quaternion rotation)
     {
@@ -13,7 +16,7 @@ public class MirrorPool : MonoBehaviour
 
         if (_inactiveMirrors.Count > 0)
         {
-            mirror = _inactiveMirrors.Pop();
+            mirror = _inactiveMirrors.Dequeue();
         }
         else
         {
@@ -22,12 +25,14 @@ public class MirrorPool : MonoBehaviour
 
         mirror.transform.SetPositionAndRotation(position, rotation);
         mirror.gameObject.SetActive(true);
+        _activeMirrors.Add(mirror);
         return mirror;
     }
 
     public void Release(PlacedMirror mirror)
     {
         mirror.gameObject.SetActive(false);
-        _inactiveMirrors.Push(mirror);
+        _activeMirrors.Remove(mirror);
+        _inactiveMirrors.Enqueue(mirror);
     }
 }
