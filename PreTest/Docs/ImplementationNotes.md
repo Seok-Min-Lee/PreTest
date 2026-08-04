@@ -116,6 +116,12 @@ Edit 모드라도 선택된 거울이 없으면 Inspector InputField를 편집 �
 
 Load는 "앱 실행 시 항상 최초로 거치는 화면"이라는 요구사항 때문에 Save/Clear와 달리 버튼 클릭이 아니라 별도 씬 `Assets/Scenes/Init.unity`의 `LoadManager.Awake()`에서 처리. 저장 파일이 없거나(`File.Exists` 실패) 파싱이 깨지면(`JsonUtility.FromJson` 예외) 둘 다 `null`로 귀결시켜 예외 없이 빈 상태로 게임 씬에 진입 — 저장 파일은 사용자가 직접 건드릴 수도 있는 외부 입력 경계이므로 방어적으로 처리.
 
+### 저장 파일이 없을 때 StreamingAssets 프리셋 폴백
+
+저장 파일이 아예 없는 최초 실행 상태에서는 거울이 하나도 없는 빈 화면으로 시작해, 평가자가 첫 실행에서 아무 것도 볼 게 없는 문제가 있음. `Assets/StreamingAssets/mirrors.json`에 미리 구성해둔 배치를 프리셋으로 두고, `LoadManager.TryLoad()`가 `persistentDataPath`(`SaveManager.SavePath`)에 저장 파일이 없을 때만 이 프리셋(`SaveManager.PresetPath`)을 대신 읽도록 폴백을 추가. 저장 스키마(`MirrorSaveDataList`)를 그대로 재사용하므로 `GameManager.SpawnLoadedMirrors()`는 프리셋과 실제 저장 데이터를 구분하지 않고 동일하게 처리.
+
+`Application.streamingAssetsPath`는 이 프로젝트가 타깃하는 Windows 스탠드얼론/에디터에서는 일반 파일 경로라 `File.Exists`/`File.ReadAllText`로 동기 접근이 가능함. Android/WebGL은 StreamingAssets가 APK 내부나 압축 스트림으로 패키징되어 `UnityWebRequest` 비동기 접근이 강제되므로, 해당 플랫폼을 타깃하게 되면 `LoadManager.Awake()`를 코루틴/비동기로 바꿔야 함.
+
 ### `MonoSingleton<T>`과 씬 간 데이터 전달
 
 `Init` → 게임 씬 전환 시 Unity가 씬 상태를 초기화하는 문제를, 별도의 정적 홀더 클래스 대신 `LoadManager` 자신을 `DontDestroyOnLoad` 싱글톤으로 만들어 해결 — 파싱된 데이터를 들고 씬 전환에서 살아남은 뒤 `GameManager`가 `LoadManager.Instance.LoadedData`를 읽어가는 구조. 재사용 가능하도록 제네릭 `MonoSingleton<T>` 베이스 클래스로 분리(`Assets/Scripts/MonoSingleton.cs`). `Destroy()`가 프레임 끝까지 지연 실행되는 특성 때문에, 하위 클래스가 실제 동작 코드를 실행하기 전 `Instance != this` 체크로 자신이 중복 인스턴스로 걸러졌는지 반드시 확인. 처음엔 읽은 뒤 값을 비우는 `ConsumeLoadedData()`로 1회성 소비를 보장했으나, 현재 코드베이스엔 게임 씬을 `Init` 없이 재로드하는 경로 자체가 없어 그 방어가 실제로 걸리는 상황이 없다고 판단해 걷어내고 단순 읽기 전용 프로퍼티로 되돌림(YAGNI) — 재시작 기능이 추가되면 재검토.

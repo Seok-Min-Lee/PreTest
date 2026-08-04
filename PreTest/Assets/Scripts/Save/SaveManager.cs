@@ -8,6 +8,7 @@ public class SaveManager : MonoBehaviour
     [SerializeField] private MirrorPool _mirrorPool;
 
     public static string SavePath => Path.Combine(Application.persistentDataPath, SaveFileName);
+    public static string PresetPath => Path.Combine(Application.streamingAssetsPath, SaveFileName);
 
     public void OnClickSave()
     {

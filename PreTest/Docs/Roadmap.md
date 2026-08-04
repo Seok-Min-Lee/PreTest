@@ -44,7 +44,7 @@
 > **중요도:** 중 (레벨 에디터 및 사용자 편의성 극대화)
 > 
 - **주요 작업:**
-    - `SaveManager`/`LoadManager` 구현: JSON 직렬화(`JsonUtility`)를 통한 거울 배치 정보 `Save`/`Load` 연동. — ✅ `SaveManager`(버튼 클릭 시 즉시 저장)와 `LoadManager`(`Init` 부트스트랩 씬에서 앱 실행 시 1회 자동 로드)로 구현. `Clear`는 런타임 배치만 초기화(저장 파일은 그대로 두고 별도 `Save`를 눌러야 영구 반영)하는 동작이라 `MirrorSelectionController.OnClickClear`로 구현.
+    - `SaveManager`/`LoadManager` 구현: JSON 직렬화(`JsonUtility`)를 통한 거울 배치 정보 `Save`/`Load` 연동. — ✅ `SaveManager`(버튼 클릭 시 즉시 저장)와 `LoadManager`(`Init` 부트스트랩 씬에서 앱 실행 시 1회 자동 로드)로 구현. `Clear`는 런타임 배치만 초기화(저장 파일은 그대로 두고 별도 `Save`를 눌러야 영구 반영)하는 동작이라 `MirrorSelectionController.OnClickClear`로 구현. 저장 파일이 없을 때는 `Assets/StreamingAssets/mirrors.json` 프리셋을 대신 로드하도록 `LoadManager` 폴백 추가.
     - 선택된 거울 삭제 기능 (`[Delete]` 버튼 및 `Delete` 단축키). — ✅ `MirrorSelectionController.OnClickDelete`/`Keyboard.deleteKey`로 구현.
     - InputField 포커스 시 단축키 오작동 방지 예외 처리(`EventSystem` 연동). — ✅ `InputFocusGuard`로 구현.
     - 3D L자 지형 관람을 위한 마우스 Orbit(회전) 및 Zoom 카메라 컨트롤러 추가. — ✅ `CameraViewController`로 구현. 좌측 상단 `Camera Reset Button`으로 초기 위치/회전 복귀 기능도 함께 추가. 휠 버튼 드래그로 화면을 평행 이동하는 Pan도 추가.

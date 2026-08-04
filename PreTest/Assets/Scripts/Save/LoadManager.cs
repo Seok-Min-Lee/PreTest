@@ -24,21 +24,26 @@ public class LoadManager : MonoSingleton<LoadManager>
 
     private static MirrorSaveDataList TryLoad()
     {
-        if (!File.Exists(SaveManager.SavePath))
+        bool hasSaveFile = File.Exists(SaveManager.SavePath);
+        string loadPath = hasSaveFile ? SaveManager.SavePath : SaveManager.PresetPath;
+
+        if (!File.Exists(loadPath))
         {
-            Debug.Log("[Load] 저장 파일이 없어 빈 상태로 시작합니다.");
+            Debug.Log("[Load] 저장 파일과 프리셋 파일이 모두 없어 빈 상태로 시작합니다.");
             return null;
         }
 
         try
         {
-            MirrorSaveDataList saveData = JsonUtility.FromJson<MirrorSaveDataList>(File.ReadAllText(SaveManager.SavePath));
-            Debug.Log($"[Load] 저장 파일 파싱 완료 -> {SaveManager.SavePath}");
+            MirrorSaveDataList saveData = JsonUtility.FromJson<MirrorSaveDataList>(File.ReadAllText(loadPath));
+            Debug.Log(hasSaveFile
+                ? $"[Load] 저장 파일 파싱 완료 -> {loadPath}"
+                : $"[Load] 저장 파일이 없어 프리셋을 불러왔습니다 -> {loadPath}");
             return saveData;
         }
         catch (Exception exception)
         {
-            Debug.LogWarning($"[Load] 저장 파일 파싱 실패, 빈 상태로 시작합니다: {exception.Message}");
+            Debug.LogWarning($"[Load] 파일 파싱 실패, 빈 상태로 시작합니다: {exception.Message}");
             return null;
         }
     }
