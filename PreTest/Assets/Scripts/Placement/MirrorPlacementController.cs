@@ -5,7 +5,6 @@ using UnityEngine.InputSystem;
 
 public class MirrorPlacementController : MonoBehaviour
 {
-    [SerializeField] private GameManager _gameManager;
     [SerializeField] private MirrorGhost _ghost;
     [SerializeField] private MirrorPool _mirrorPool;
     [SerializeField] private LayerMask _floorLayerMask;
@@ -27,12 +26,12 @@ public class MirrorPlacementController : MonoBehaviour
 
     private void OnEnable()
     {
-        _gameManager.ModeChanged += HandleModeChanged;
+        GameManager.ModeChanged += HandleModeChanged;
     }
 
     private void OnDisable()
     {
-        _gameManager.ModeChanged -= HandleModeChanged;
+        GameManager.ModeChanged -= HandleModeChanged;
     }
 
     private void HandleModeChanged(AppMode mode)
@@ -45,7 +44,7 @@ public class MirrorPlacementController : MonoBehaviour
 
     public void BeginPlacement()
     {
-        if (_gameManager.Mode != AppMode.Edit)
+        if (GameManager.Mode != AppMode.Edit)
         {
             return;
         }

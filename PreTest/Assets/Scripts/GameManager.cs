@@ -7,14 +7,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private ModeIndicator _modeIndicator;
     [SerializeField] private MirrorPool _mirrorPool;
 
-    private AppMode _mode = AppMode.Play;
+    private static AppMode s_Mode = AppMode.Play;
 
-    public AppMode Mode => _mode;
-    public event Action<AppMode> ModeChanged;
+    public static AppMode Mode => s_Mode;
+    public static event Action<AppMode> ModeChanged;
 
     private void Start()
     {
-        _modeIndicator.SetMode(_mode);
+        _modeIndicator.SetMode(s_Mode);
         SpawnLoadedMirrors();
     }
 
@@ -71,13 +71,13 @@ public class GameManager : MonoBehaviour
 
     private void SetMode(AppMode mode)
     {
-        if (_mode == mode)
+        if (s_Mode == mode)
         {
             return;
         }
 
-        _mode = mode;
-        _modeIndicator.SetMode(_mode);
-        ModeChanged?.Invoke(_mode);
+        s_Mode = mode;
+        _modeIndicator.SetMode(s_Mode);
+        ModeChanged?.Invoke(s_Mode);
     }
 }

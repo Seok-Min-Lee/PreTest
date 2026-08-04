@@ -3,19 +3,18 @@ using UnityEngine.UI;
 
 public class ModeButtonGroup : MonoBehaviour
 {
-    [SerializeField] private GameManager _gameManager;
     [SerializeField] private Button _editButton;
     [SerializeField] private Button _playButton;
 
     private void OnEnable()
     {
-        _gameManager.ModeChanged += HandleModeChanged;
-        ApplyMode(_gameManager.Mode);
+        GameManager.ModeChanged += HandleModeChanged;
+        ApplyMode(GameManager.Mode);
     }
 
     private void OnDisable()
     {
-        _gameManager.ModeChanged -= HandleModeChanged;
+        GameManager.ModeChanged -= HandleModeChanged;
     }
 
     private void HandleModeChanged(AppMode mode)

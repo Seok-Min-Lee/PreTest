@@ -6,7 +6,6 @@ public class MirrorGizmo : MonoBehaviour
 {
     [SerializeField] private LayerMask _gizmoHandleLayerMask;
     [SerializeField] private MirrorSelectionController _selectionController;
-    [SerializeField] private GameManager _gameManager;
 
     private Camera _camera;
     private GizmoHandle[] _handles;
@@ -28,14 +27,14 @@ public class MirrorGizmo : MonoBehaviour
         _camera = Camera.main;
         _handles = GetComponentsInChildren<GizmoHandle>(true);
         _selectionController.SelectionChanged += HandleSelectionChanged;
-        _gameManager.ModeChanged += HandleModeChanged;
+        GameManager.ModeChanged += HandleModeChanged;
         UpdateVisibility();
     }
 
     private void OnDestroy()
     {
         _selectionController.SelectionChanged -= HandleSelectionChanged;
-        _gameManager.ModeChanged -= HandleModeChanged;
+        GameManager.ModeChanged -= HandleModeChanged;
     }
 
     private void HandleSelectionChanged(PlacedMirror mirror)
@@ -61,7 +60,7 @@ public class MirrorGizmo : MonoBehaviour
     // "선택됨"과 "기즈모를 실제로 보여줌"을 분리해 여기서 최종 표시 여부를 판단한다.
     private void UpdateVisibility()
     {
-        bool shouldShow = _target != null && _gameManager.Mode == AppMode.Edit;
+        bool shouldShow = _target != null && GameManager.Mode == AppMode.Edit;
         gameObject.SetActive(shouldShow);
     }
 

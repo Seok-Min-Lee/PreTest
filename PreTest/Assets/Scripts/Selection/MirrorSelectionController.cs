@@ -7,7 +7,6 @@ public class MirrorSelectionController : MonoBehaviour
 {
     [SerializeField] private MirrorPlacementController _placementController;
     [SerializeField] private MirrorPool _mirrorPool;
-    [SerializeField] private GameManager _gameManager;
     [SerializeField] private LayerMask _mirrorLayerMask;
     [SerializeField] private LayerMask _gizmoHandleLayerMask;
 
@@ -106,7 +105,7 @@ public class MirrorSelectionController : MonoBehaviour
 
     private void DeleteSelected()
     {
-        if (_gameManager.Mode != AppMode.Edit)
+        if (GameManager.Mode != AppMode.Edit)
         {
             return;
         }
@@ -123,7 +122,7 @@ public class MirrorSelectionController : MonoBehaviour
 
     public void OnClickClear()
     {
-        if (_gameManager.Mode != AppMode.Edit)
+        if (GameManager.Mode != AppMode.Edit)
         {
             return;
         }

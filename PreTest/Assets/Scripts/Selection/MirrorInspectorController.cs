@@ -4,7 +4,6 @@ using UnityEngine;
 public class MirrorInspectorController : MonoBehaviour
 {
     [SerializeField] private MirrorSelectionController _selectionController;
-    [SerializeField] private GameManager _gameManager;
     [SerializeField] private TMP_InputField _positionXField;
     [SerializeField] private TMP_InputField _positionYField;
     [SerializeField] private TMP_InputField _positionZField;
@@ -21,7 +20,7 @@ public class MirrorInspectorController : MonoBehaviour
     private void OnEnable()
     {
         _selectionController.SelectionChanged += HandleSelectionChanged;
-        _gameManager.ModeChanged += HandleModeChanged;
+        GameManager.ModeChanged += HandleModeChanged;
 
         HandleSelectionChanged(_selectionController.SelectedMirror);
     }
@@ -29,7 +28,7 @@ public class MirrorInspectorController : MonoBehaviour
     private void OnDisable()
     {
         _selectionController.SelectionChanged -= HandleSelectionChanged;
-        _gameManager.ModeChanged -= HandleModeChanged;
+        GameManager.ModeChanged -= HandleModeChanged;
     }
 
     private void Update()
@@ -63,7 +62,7 @@ public class MirrorInspectorController : MonoBehaviour
 
     private void UpdateInteractable()
     {
-        bool interactable = _gameManager.Mode == AppMode.Edit && _target != null;
+        bool interactable = GameManager.Mode == AppMode.Edit && _target != null;
 
         _positionXField.interactable = interactable;
         _positionYField.interactable = interactable;

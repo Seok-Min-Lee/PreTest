@@ -33,7 +33,7 @@
 > 
 - **주요 작업:**
     - Main Canvas 및 하위 Sub-Canvas(`InspectorPanelGroup`) 구성 (Canvas Rebatching 최적화).
-    - `GameManager`를 통한 `Edit` ↔ `Play` 모드 상태 관리 구현: `ModeChanged` 이벤트를 배치/기즈모/버튼 표시가 각각 구독해 게이팅.
+    - `GameManager`를 통한 `Edit` ↔ `Play` 모드 상태 관리 구현: `ModeChanged` 이벤트를 배치/기즈모/버튼 표시가 각각 구독해 게이팅. — ✅ 이후 `Mode`/`ModeChanged`를 `PlacedMirror.ActiveCount`/`ActiveCountChanged`와 같은 static 패턴으로 전환해, 구독하는 6개 클래스가 더 이상 `GameManager` 인스턴스 참조를 들고 있지 않아도 되게 정리.
     - 선택된 거울의 Position/Rotation/Name/Description을 보여주는 Inspector UI 구현 및 Gizmo와의 **양방향 데이터 바인딩**.
     - Play 모드 시, 그리고 선택된 거울이 없을 때 Inspector UI를 Read-Only(조회 전용)로 전환.
     - Inspector 패널 하단 `Close Button`으로 닫고, 거울 클릭 시 다시 열리도록 처리.
