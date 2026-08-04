@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class LoadManager : MonoSingleton<LoadManager>
 {
-    [SerializeField] private string _gameSceneName = "LaserTest";
+    [SerializeField] private string _gameSceneName = "Scene";
 
     public MirrorSaveDataList LoadedData { get; private set; }
 

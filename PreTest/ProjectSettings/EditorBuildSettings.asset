@@ -9,8 +9,8 @@ EditorBuildSettings:
     path: Assets/Scenes/Init.unity
     guid: aae680906dd50724796864550e1fb12c
   - enabled: 1
-    path: Assets/Scenes/LaserTest.unity
-    guid: 510bfa5e6c564c89bcc4fddf0d54b8c0
+    path: Assets/Scenes/Scene.unity
+    guid: cbee4182da0d776419d824dc350b6348
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d15682ab2f9abdf4d9e522887a2f5b7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadManager
-  _gameSceneName: LaserTest
+  _gameSceneName: Scene
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

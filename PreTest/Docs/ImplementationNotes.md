@@ -106,7 +106,7 @@ Load는 "앱 실행 시 항상 최초로 거치는 화면"이라는 요구사항
 
 ### `MonoSingleton<T>`과 씬 간 데이터 전달
 
-`Init` → `LaserTest` 전환 시 Unity가 씬 상태를 초기화하는 문제를, 별도의 정적 홀더 클래스 대신 `LoadManager` 자신을 `DontDestroyOnLoad` 싱글톤으로 만들어 해결 — 파싱된 데이터를 들고 씬 전환에서 살아남은 뒤 `GameManager`가 `LoadManager.Instance.LoadedData`를 읽어가는 구조. 재사용 가능하도록 제네릭 `MonoSingleton<T>` 베이스 클래스로 분리(`Assets/Scripts/MonoSingleton.cs`). `Destroy()`가 프레임 끝까지 지연 실행되는 특성 때문에, 하위 클래스가 실제 동작 코드를 실행하기 전 `Instance != this` 체크로 자신이 중복 인스턴스로 걸러졌는지 반드시 확인. 처음엔 읽은 뒤 값을 비우는 `ConsumeLoadedData()`로 1회성 소비를 보장했으나, 현재 코드베이스엔 `LaserTest`를 `Init` 없이 재로드하는 경로 자체가 없어 그 방어가 실제로 걸리는 상황이 없다고 판단해 걷어내고 단순 읽기 전용 프로퍼티로 되돌림(YAGNI) — 재시작 기능이 추가되면 재검토.
+`Init` → 게임 씬 전환 시 Unity가 씬 상태를 초기화하는 문제를, 별도의 정적 홀더 클래스 대신 `LoadManager` 자신을 `DontDestroyOnLoad` 싱글톤으로 만들어 해결 — 파싱된 데이터를 들고 씬 전환에서 살아남은 뒤 `GameManager`가 `LoadManager.Instance.LoadedData`를 읽어가는 구조. 재사용 가능하도록 제네릭 `MonoSingleton<T>` 베이스 클래스로 분리(`Assets/Scripts/MonoSingleton.cs`). `Destroy()`가 프레임 끝까지 지연 실행되는 특성 때문에, 하위 클래스가 실제 동작 코드를 실행하기 전 `Instance != this` 체크로 자신이 중복 인스턴스로 걸러졌는지 반드시 확인. 처음엔 읽은 뒤 값을 비우는 `ConsumeLoadedData()`로 1회성 소비를 보장했으나, 현재 코드베이스엔 게임 씬을 `Init` 없이 재로드하는 경로 자체가 없어 그 방어가 실제로 걸리는 상황이 없다고 판단해 걷어내고 단순 읽기 전용 프로퍼티로 되돌림(YAGNI) — 재시작 기능이 추가되면 재검토.
 
 실제 거울 스폰(`MirrorPool.Get()` 호출) 주체는 `GameManager.Start()`로 결정 — `MirrorPlacementController.PlaceMirror()`가 이미 쓰는 `Get()` 패턴과 `MaxMirrorCount` 캡을 그대로 재사용.
 
@@ -116,7 +116,11 @@ Load는 "앱 실행 시 항상 최초로 거치는 화면"이라는 요구사항
 
 ### 에디터에서 매번 `Init`을 거쳐야 하는 번거로움
 
-`Init`이 항상 최초 진입 씬이 되도록 Build Settings에 0번으로 등록했지만, 에디터에서 `LaserTest`를 열어놓고 작업하다 Play를 누르면 `Init`을 거치지 않아 Load 흐름이 테스트되지 않는 문제가 있음. `Assets/Editor/PlayModeStartSceneSetup.cs`(`[InitializeOnLoad]` 정적 생성자)로 `EditorSceneManager.playModeStartScene`을 자동으로 `Init.unity`로 지정해 해결 — 에디터 UI를 수동으로 찾아 설정하는 대신 스크립트로 커밋해두면, 이 프로젝트를 처음 여는 사람도 별도 설정 없이 빌드와 동일한 진입 흐름(`Init` → `LaserTest`)으로 테스트하게 됨. 이미 값이 설정돼 있으면 덮어쓰지 않아 수동으로 다른 씬을 지정해둔 경우를 존중.
+`Init`이 항상 최초 진입 씬이 되도록 Build Settings에 0번으로 등록했지만, 에디터에서 게임 씬(`Scene.unity`)을 열어놓고 작업하다 Play를 누르면 `Init`을 거치지 않아 Load 흐름이 테스트되지 않는 문제가 있음. `Assets/Editor/PlayModeStartSceneSetup.cs`(`[InitializeOnLoad]` 정적 생성자)로 `EditorSceneManager.playModeStartScene`을 자동으로 `Init.unity`로 지정해 해결 — 에디터 UI를 수동으로 찾아 설정하는 대신 스크립트로 커밋해두면, 이 프로젝트를 처음 여는 사람도 별도 설정 없이 빌드와 동일한 진입 흐름(`Init` → `Scene`)으로 테스트하게 됨. 이미 값이 설정돼 있으면 덮어쓰지 않아 수동으로 다른 씬을 지정해둔 경우를 존중.
+
+### 게임 씬을 `LaserTest.unity`에서 `Scene.unity`로 통합
+
+기존에 템플릿 잔재였던 빈 `Scene.unity`와 실제 게임 로직이 들어있던 `LaserTest.unity` 두 씬이 따로 존재했는데, 하나로 합치면서 `LaserTest.unity`는 삭제하고 `Scene.unity`가 실제 게임 씬 역할을 대체함. 이 과정에서 `Scene.unity`가 새 asset guid를 받게 되어, `ProjectSettings/EditorBuildSettings.asset`에 등록된 두 번째 씬 항목의 `path`는 `Scene.unity`로 갱신됐지만 `guid`는 예전 `LaserTest.unity`의 guid가 그대로 남아 참조가 끊겨 있던 문제가 있었음 — `Scene.unity.meta`의 guid로 맞춰 수정. `LoadManager._gameSceneName`(Init 씬에 직렬화된 값과 코드 기본값 둘 다)도 `"Scene"`으로 갱신.
 
 ### Delete/Clear를 `SaveManager`가 아닌 `MirrorSelectionController`에 둔 이유
 
