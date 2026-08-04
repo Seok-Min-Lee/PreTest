@@ -81,3 +81,9 @@ Edit 모드라도 선택된 거울이 없으면 Inspector InputField를 편집 �
 ### InputField 포커스 중 단축키 오작동 방지
 
 `MirrorGizmo`의 Move/Rotate 전환(`wKey`/`eKey`)과 `MirrorPlacementController`의 배치 취소(`escapeKey`)는 New Input System의 `Keyboard.current`로 물리 키 상태를 직접 폴링하는데, 이 방식은 TMP_InputField가 포커스를 갖고 있어도 자동으로 막히지 않음 — 예를 들어 Inspector의 Name/Description 필드에 "west"라고만 타이핑해도 `w`에서 기즈모가 Move 모드로 전환되는 실제 버그가 있었음. `Assets/Scripts/InputFocusGuard.cs`(정적 유틸리티, `EventSystem.current.currentSelectedGameObject`에 `TMP_InputField`가 붙어있는지로 판별)를 두 스크립트의 키보드 단축키 체크 앞단에 공통으로 적용해 해결. 마우스 기반 취소(우클릭)는 타이핑과 충돌하지 않으므로 가드 대상에서 제외.
+
+### 카메라 뷰 컨트롤러 — 오빗 대신 로컬 회전
+
+처음엔 고정 피벗을 중심으로 도는 오빗 카메라를 검토했으나, 피벗에 종속되면 나중에 다른 조작(이동 등)을 얹을 때 "항상 피벗을 바라보기" 제약을 다시 풀어야 해서 확장성이 떨어짐. 대신 `CameraViewController`는 카메라 자신의 로컬 회전만 다룸 — 우클릭 드래그 중 마우스 델타로 `yaw`/`pitch`를 매 프레임 누적하고, 그 값으로 `Quaternion.Euler(pitch, yaw, 0)`를 새로 세팅하는 방식(`transform.Rotate` 반복 호출은 부동소수점 오차로 롤이 누적되는 문제가 있어 피함). `pitch`는 뒤집히지 않게 `_minPitch`/`_maxPitch`(-80~80)로 clamp. 피벗이 없어지므로 Zoom도 "피벗까지 거리 좁히기"가 아니라 휠 입력만큼 카메라 자신의 `transform.forward` 방향으로 전진/후진(dolly)하는 방식으로 처리. 이동(WASD 등)은 이번 범위에서 제외. `EventSystem.current.IsPointerOverGameObject()`를 `Update()` 최상단에서 한 번만 확인해 Inspector 패널 위에서는 회전·줌 모두 반응하지 않도록 함. Edit/Play 모드와 무관하게 항상 동작(지형 관람용이라 게이팅 불필요).
+
+이동 없이 회전+dolly만 있다 보니 사용자가 지형에서 완전히 벗어난 뷰로 가버리면 되돌아올 방법이 없는 문제가 있어, `Awake()`에서 씬에 배치된 초기 Position/Rotation을 그대로 기억해뒀다가 복귀시키는 `public OnClickResetView()`를 추가. 좌측 상단 `Camera Reset Button`에 연결했는데, 이 버튼 GameObject는 씬에 Image만 추가되고 실제 `Button` 컴포넌트가 빠져 있어서 클릭이 전혀 안 되는 상태였음 — `UnityEngine.UI.Button` 컴포넌트를 추가하고 기존 아이콘 Image를 `m_TargetGraphic`으로 연결한 뒤, 다른 버튼들과 같은 방침대로 `OnClick`을 씬에서 `CameraViewController.OnClickResetView`로 직접 연결.

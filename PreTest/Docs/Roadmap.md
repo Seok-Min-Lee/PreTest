@@ -46,7 +46,7 @@
     - `SaveManager` 구현: JSON 직렬화(`JsonUtility`)를 통한 거울 배치 정보 `Save / Load / Clear` 연동.
     - 선택된 거울 삭제 기능 (`[Delete]` 버튼 및 `Delete` 단축키).
     - InputField 포커스 시 단축키 오작동 방지 예외 처리(`EventSystem` 연동). — ✅ `InputFocusGuard`로 구현.
-    - 3D L자 지형 관람을 위한 마우스 Orbit(회전) 및 Zoom 카메라 컨트롤러 추가.
+    - 3D L자 지형 관람을 위한 마우스 Orbit(회전) 및 Zoom 카메라 컨트롤러 추가. — ✅ `CameraViewController`로 구현. 좌측 상단 `Camera Reset Button`으로 초기 위치/회전 복귀 기능도 함께 추가.
 
 ### ⚫ Priority 5: 최종 검증 및 문서화 (제출 준비)
 
