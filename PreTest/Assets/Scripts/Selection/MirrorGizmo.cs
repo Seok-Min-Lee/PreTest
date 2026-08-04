@@ -1,9 +1,12 @@
-﻿using UnityEngine;
+using System;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class MirrorGizmo : MonoBehaviour
 {
     [SerializeField] private LayerMask _gizmoHandleLayerMask;
+    [SerializeField] private MirrorSelectionController _selectionController;
+    [SerializeField] private GameManager _gameManager;
 
     private Camera _camera;
     private GizmoHandle[] _handles;
@@ -17,25 +20,49 @@ public class MirrorGizmo : MonoBehaviour
     private Vector3 _rotateStartDirection;
     private Quaternion _rotateStartRotation;
 
+    public GizmoHandleKind Mode => _mode;
+    public event Action<GizmoHandleKind> ModeChanged;
+
     private void Awake()
     {
         _camera = Camera.main;
         _handles = GetComponentsInChildren<GizmoHandle>(true);
+        _selectionController.SelectionChanged += HandleSelectionChanged;
+        _gameManager.ModeChanged += HandleModeChanged;
+        UpdateVisibility();
     }
 
-    public void Attach(PlacedMirror target)
+    private void OnDestroy()
     {
-        _target = target;
-        transform.SetPositionAndRotation(target.transform.position, target.transform.rotation);
-        gameObject.SetActive(true);
-        ApplyMode();
+        _selectionController.SelectionChanged -= HandleSelectionChanged;
+        _gameManager.ModeChanged -= HandleModeChanged;
     }
 
-    public void Detach()
+    private void HandleSelectionChanged(PlacedMirror mirror)
     {
-        _target = null;
+        _target = mirror;
         _draggingHandle = null;
-        gameObject.SetActive(false);
+
+        if (_target != null)
+        {
+            transform.SetPositionAndRotation(_target.transform.position, _target.transform.rotation);
+            ApplyMode();
+        }
+
+        UpdateVisibility();
+    }
+
+    private void HandleModeChanged(AppMode mode)
+    {
+        UpdateVisibility();
+    }
+
+    // Play 모드에서는 거울을 선택할 수는 있지만(Inspector 표시용) 기즈모는 뜨면 안 되므로,
+    // "선택됨"과 "기즈모를 실제로 보여줌"을 분리해 여기서 최종 표시 여부를 판단한다.
+    private void UpdateVisibility()
+    {
+        bool shouldShow = _target != null && _gameManager.Mode == AppMode.Edit;
+        gameObject.SetActive(shouldShow);
     }
 
     private void LateUpdate()
@@ -71,7 +98,7 @@ public class MirrorGizmo : MonoBehaviour
         }
     }
 
-    private void SetMode(GizmoHandleKind mode)
+    public void SetMode(GizmoHandleKind mode)
     {
         if (_mode == mode)
         {
@@ -80,6 +107,7 @@ public class MirrorGizmo : MonoBehaviour
 
         _mode = mode;
         ApplyMode();
+        ModeChanged?.Invoke(_mode);
     }
 
     private void ApplyMode()

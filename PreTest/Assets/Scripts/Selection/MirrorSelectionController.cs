@@ -1,15 +1,19 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class MirrorSelectionController : MonoBehaviour
 {
-    [SerializeField] private MirrorGizmo _gizmo;
     [SerializeField] private MirrorPlacementController _placementController;
     [SerializeField] private LayerMask _mirrorLayerMask;
     [SerializeField] private LayerMask _gizmoHandleLayerMask;
 
     private Camera _camera;
+
+    public PlacedMirror SelectedMirror { get; private set; }
+    public event Action<PlacedMirror> SelectionChanged;
+    public event Action<PlacedMirror> MirrorClicked;
 
     private void Awake()
     {
@@ -38,7 +42,7 @@ public class MirrorSelectionController : MonoBehaviour
 
         if (!Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, combinedMask))
         {
-            _gizmo.Detach();
+            Select(null);
             return;
         }
 
@@ -51,6 +55,23 @@ public class MirrorSelectionController : MonoBehaviour
         }
 
         PlacedMirror mirror = hit.collider.GetComponent<PlacedMirror>();
-        _gizmo.Attach(mirror);
+
+        if (mirror != null)
+        {
+            MirrorClicked?.Invoke(mirror);
+        }
+
+        Select(mirror);
+    }
+
+    private void Select(PlacedMirror mirror)
+    {
+        if (SelectedMirror == mirror)
+        {
+            return;
+        }
+
+        SelectedMirror = mirror;
+        SelectionChanged?.Invoke(mirror);
     }
 }

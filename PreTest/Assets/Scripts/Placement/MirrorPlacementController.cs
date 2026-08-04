@@ -1,15 +1,14 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class MirrorPlacementController : MonoBehaviour
 {
-    private const int MaxMirrorCount = 100;
+    public const int MaxMirrorCount = 100;
 
+    [SerializeField] private GameManager _gameManager;
     [SerializeField] private MirrorGhost _ghost;
     [SerializeField] private MirrorPool _mirrorPool;
-    [SerializeField] private Button _addMirrorButton;
     [SerializeField] private LayerMask _floorLayerMask;
 
     private Camera _camera;
@@ -26,8 +25,31 @@ public class MirrorPlacementController : MonoBehaviour
         _ghost.Hide();
     }
 
+    private void OnEnable()
+    {
+        _gameManager.ModeChanged += HandleModeChanged;
+    }
+
+    private void OnDisable()
+    {
+        _gameManager.ModeChanged -= HandleModeChanged;
+    }
+
+    private void HandleModeChanged(AppMode mode)
+    {
+        if (mode != AppMode.Edit && _isPlacing)
+        {
+            CancelPlacement();
+        }
+    }
+
     public void BeginPlacement()
     {
+        if (_gameManager.Mode != AppMode.Edit)
+        {
+            return;
+        }
+
         if (PlacedMirror.ActiveCount >= MaxMirrorCount)
         {
             return;
@@ -95,10 +117,5 @@ public class MirrorPlacementController : MonoBehaviour
 
         _isPlacing = false;
         _ghost.Hide();
-
-        if (PlacedMirror.ActiveCount >= MaxMirrorCount)
-        {
-            _addMirrorButton.interactable = false;
-        }
     }
 }
