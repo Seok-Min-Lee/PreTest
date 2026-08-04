@@ -35,4 +35,14 @@ public class MirrorPool : MonoBehaviour
         _activeMirrors.Remove(mirror);
         _inactiveMirrors.Enqueue(mirror);
     }
+
+    public void ReleaseAll()
+    {
+        List<PlacedMirror> mirrorsToRelease = new List<PlacedMirror>(_activeMirrors);
+
+        foreach (PlacedMirror mirror in mirrorsToRelease)
+        {
+            Release(mirror);
+        }
+    }
 }

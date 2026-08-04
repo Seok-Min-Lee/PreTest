@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 public class MirrorSelectionController : MonoBehaviour
 {
     [SerializeField] private MirrorPlacementController _placementController;
+    [SerializeField] private MirrorPool _mirrorPool;
+    [SerializeField] private GameManager _gameManager;
     [SerializeField] private LayerMask _mirrorLayerMask;
     [SerializeField] private LayerMask _gizmoHandleLayerMask;
 
@@ -26,6 +28,8 @@ public class MirrorSelectionController : MonoBehaviour
         {
             return;
         }
+
+        HandleDeleteShortcut();
 
         if (!Mouse.current.leftButton.wasPressedThisFrame)
         {
@@ -73,5 +77,59 @@ public class MirrorSelectionController : MonoBehaviour
 
         SelectedMirror = mirror;
         SelectionChanged?.Invoke(mirror);
+    }
+
+    private void HandleDeleteShortcut()
+    {
+        if (SelectedMirror == null)
+        {
+            return;
+        }
+
+        if (InputFocusGuard.IsInputFieldFocused())
+        {
+            return;
+        }
+
+        if (!Keyboard.current.deleteKey.wasPressedThisFrame)
+        {
+            return;
+        }
+
+        DeleteSelected();
+    }
+
+    public void OnClickDelete()
+    {
+        DeleteSelected();
+    }
+
+    private void DeleteSelected()
+    {
+        if (_gameManager.Mode != AppMode.Edit)
+        {
+            return;
+        }
+
+        if (SelectedMirror == null)
+        {
+            return;
+        }
+
+        PlacedMirror mirror = SelectedMirror;
+        Select(null);
+        _mirrorPool.Release(mirror);
+    }
+
+    public void OnClickClear()
+    {
+        if (_gameManager.Mode != AppMode.Edit)
+        {
+            return;
+        }
+
+        Select(null);
+        _mirrorPool.ReleaseAll();
+        Debug.Log("[Clear] 모든 거울을 제거했습니다.");
     }
 }

@@ -117,3 +117,11 @@ Load는 "앱 실행 시 항상 최초로 거치는 화면"이라는 요구사항
 ### 에디터에서 매번 `Init`을 거쳐야 하는 번거로움
 
 `Init`이 항상 최초 진입 씬이 되도록 Build Settings에 0번으로 등록했지만, 에디터에서 `LaserTest`를 열어놓고 작업하다 Play를 누르면 `Init`을 거치지 않아 Load 흐름이 테스트되지 않는 문제가 있음. `Assets/Editor/PlayModeStartSceneSetup.cs`(`[InitializeOnLoad]` 정적 생성자)로 `EditorSceneManager.playModeStartScene`을 자동으로 `Init.unity`로 지정해 해결 — 에디터 UI를 수동으로 찾아 설정하는 대신 스크립트로 커밋해두면, 이 프로젝트를 처음 여는 사람도 별도 설정 없이 빌드와 동일한 진입 흐름(`Init` → `LaserTest`)으로 테스트하게 됨. 이미 값이 설정돼 있으면 덮어쓰지 않아 수동으로 다른 씬을 지정해둔 경우를 존중.
+
+### Delete/Clear를 `SaveManager`가 아닌 `MirrorSelectionController`에 둔 이유
+
+Clear는 처음엔 Save/Load와 한 세트로 묶여 있던 Roadmap 항목이라 `SaveManager`에 `OnClickClear()`를 넣었으나, Clear는 저장 파일을 전혀 건드리지 않고 **런타임 배치만 초기화**하는 동작(지운 걸 영구 반영하려면 별도로 `Save`를 눌러야 함)이라는 게 명확해지면서 `SaveManager`의 책임(파일 I/O)과 안 맞는다고 판단해 옮김. `MirrorSelectionController`는 `SelectedMirror`를 이미 소유하고 있고, 단일 삭제(`Delete`)를 구현하며 `_mirrorPool`/`_gameManager` 참조를 이미 갖추게 됐으므로 전체 삭제(`Clear`)도 같은 곳에 두면 새 참조 없이 재사용 가능 — `SaveManager`는 다시 `_mirrorPool` 하나만 참조하는 순수 저장 담당으로 남음.
+
+### Delete — 버튼과 단축키가 같은 메서드로 수렴
+
+`[Delete]` 버튼(`OnClickDelete`)과 `Delete` 키 단축키(`Keyboard.current.deleteKey`, `MirrorGizmo`의 W/E 처리와 동일하게 `InputFocusGuard.IsInputFieldFocused()`로 InputField 편집 중엔 무시)가 모두 같은 `DeleteSelected()`로 수렴. 삭제 시 `Select(null)`을 **먼저** 호출해 `SelectionChanged`가 먼저 발행되게 한 뒤(→ `MirrorGizmo`/`MirrorInspectorController`가 이번 프레임에 이미 `_target == null`로 반응) `MirrorPool.Release()`로 실제 반환 — 죽은 참조가 한 프레임이라도 남지 않도록 순서를 고정.
