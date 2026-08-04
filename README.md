@@ -36,20 +36,16 @@ Edit. 2025-12-17
 ## 조작 방법
 
 **모드 전환**
-- 화면 우측 하단에 `Edit`/`Play` 버튼으로 전환. 좌측 상단에 현재 모드가 표시됨.
-- `Play` 모드에서는 거울 선택과 Inspector 조회만 가능하고, `Edit` 모드에서는 배치·이동·회전·삭제까지 가능함.
-
 | Edit 모드 | Play 모드 |
 |---|---|
 | ![Edit 모드](PreTest/Docs/Previews/preview-mode-edit.png) | ![Play 모드](PreTest/Docs/Previews/preview-mode-play.png) |
+- 화면 우측 하단에 `Edit`/`Play` 버튼으로 전환. 좌측 상단에 현재 모드가 표시됨.
+- `Play` 모드에서는 거울 선택과 Inspector 조회만 가능하고, `Edit` 모드에서는 배치·이동·회전·삭제까지 가능함.
 
 **거울 배치 (Edit 모드)**
 - `Add Mirror` 버튼 → 배치 모드 진입 → `Floor` 레이어 위 아무 곳이나 클릭하면 표면 법선에 맞춰 배치
 - 배치 중 마우스 우클릭 또는 `Esc`로 취소.
 - 최대 배치 개수에 도달하면 추가 배치가 불가능함.
-
-![거울 배치 1](PreTest/Docs/Previews/preview-batch-mirror-1.gif)
-![거울 배치 2](PreTest/Docs/Previews/preview-batch-mirror-2.gif)
 
 **거울 조작 (Edit 모드)**
 - 배치된 거울을 클릭하면 선택되고, 우측 Inspector 패널에 Name/Position/Rotation/Description이 표시됨 
@@ -59,6 +55,10 @@ Edit. 2025-12-17
 - 개별 삭제: Inspector 패널의 `Delete` 버튼, 키보드 `Delete` 키
 - 전체 삭제: 우측 상단 `Clear` 버튼 (런타임에만 반영되며, 영구 반영하려면 `Save`를 눌러야 함).
 - Inspector 패널은 하단 `Close` 버튼으로 닫고, 거울을 다시 클릭하면 열림.
+
+| 예시 1 | 예시 2 |
+|---|---|
+| ![거울 배치 1](PreTest/Docs/Previews/preview-batch-mirror-1.gif) | ![거울 배치 2](PreTest/Docs/Previews/preview-batch-mirror-2.gif) |
 
 **저장/불러오기**
 - `Save` 버튼: 현재 배치(Position/Rotation/Name/Description)를 JSON으로 저장.
