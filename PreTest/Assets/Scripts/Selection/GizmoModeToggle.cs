@@ -8,14 +8,14 @@ public class GizmoModeToggle : MonoBehaviour
 
     private void OnEnable()
     {
-        _gizmo.ModeChanged += HandleModeChanged;
+        MirrorGizmo.ModeChanged += HandleModeChanged;
 
-        ApplyMode(_gizmo.Mode);
+        ApplyMode(MirrorGizmo.Mode);
     }
 
     private void OnDisable()
     {
-        _gizmo.ModeChanged -= HandleModeChanged;
+        MirrorGizmo.ModeChanged -= HandleModeChanged;
     }
 
     public void OnClickPosition()

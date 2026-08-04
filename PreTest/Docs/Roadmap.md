@@ -24,7 +24,7 @@
     - `Floor` 레이어 콜라이더 전체에 대해 격자 스냅 없는 자유 배치: `Add Mirror` → 배치 모드 진입 → 표면 법선 정렬 고스트 프리뷰 → 클릭으로 확정.
     - 배치 모드 취소: 마우스 우클릭 또는 `Esc` 키로 고스트를 숨기고 즉시 종료.
     - 거울 최대 100개 제한 및 좌측 하단 현재/최대 개수 표시. — ✅ 최대 개수 도달 시 `Debug.Log` 안내와 개수 텍스트 빨간색 깜빡임 피드백도 추가. `MirrorPlacementController.MaxMirrorCountReached` 이벤트를 `MirrorCountDisplay`가 구독해 DOTween으로 처리.
-    - `MirrorGizmo`를 통한 선택 거울 조작: 축별 핸들(Move X/Y/Z 큐브 + Rotate X/Y/Z 링), `Edit Option` 버튼과 양방향 동기화.
+    - `MirrorGizmo`를 통한 선택 거울 조작: 축별 핸들(Move X/Y/Z 큐브 + Rotate X/Y/Z 링), `Edit Option` 버튼과 양방향 동기화. — ✅ `Mode`/`ModeChanged`를 `GameManager`와 동일한 static 패턴으로 전환(가독성·일관성 목적).
     - `Floor`/`Mirror`/`GizmoHandle` 레이어 분리로 배치·선택·레이저 레이캐스트 간 상호 간섭 방지.
 
 ### 🟢 Priority 3: UI 구조 및 양방향 동기화 (완성도 향상) — ✅ 완료

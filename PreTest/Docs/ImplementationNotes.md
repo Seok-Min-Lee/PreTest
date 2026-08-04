@@ -167,3 +167,7 @@ Clear는 처음엔 Save/Load와 한 세트로 묶여 있던 Roadmap 항목이라
 `MirrorPlacementController`, `MirrorSelectionController`, `EditModeOnly`, `MirrorInspectorController`, `MirrorGizmo`, `ModeButtonGroup` 6개 클래스가 전부 `[SerializeField] private GameManager _gameManager;`를 들고 `_gameManager.Mode`/`_gameManager.ModeChanged`만 읽는 형태였음 — `GameConfig`를 정리하면서 같은 반복 연결 문제가 `GameManager`에도 있다는 게 눈에 띔.
 
 `GameConfig`처럼 별도 애셋으로 뺄 값이 아니라 애초에 `GameManager` 자신이 소유해야 하는 런타임 상태(모드 전환은 `OnClickEditButton`/`OnClickPlayButton` 같은 씬 버튼 바인딩이 필요해 인스턴스로 남아야 함)라, `PlacedMirror.ActiveCount`/`ActiveCountChanged`가 이미 쓰고 있는 것과 같은 패턴으로 `Mode`/`ModeChanged`만 `static`으로 전환 — `GameManager` 인스턴스는 씬에 그대로 있고 `_modeIndicator`/`_mirrorPool`도 그대로 갖고 있지만, 다른 6개 클래스는 `GameManager.Mode`/`GameManager.ModeChanged`로 바로 접근해 `_gameManager` 필드 자체가 필요 없어짐. 씬에 `GameManager`가 항상 하나뿐이라 static 상태 공유로 인한 충돌 위험은 없음.
+
+### `MirrorGizmo.Mode`/`ModeChanged`도 같은 패턴으로
+
+`MirrorGizmo`의 `Mode`/`ModeChanged`(타입 `GizmoHandleKind`)를 참조하는 곳은 `GizmoModeToggle` 하나뿐이라, `GameManager` 때와 달리 static으로 바꿔도 "필드 연결이 사라지는" 실익은 거의 없음 — `GizmoModeToggle`은 `OnClickPosition()`/`OnClickRotation()`에서 `_gizmo.SetMode(...)`도 호출해야 해서 `_gizmo` 참조 자체는 계속 들고 있어야 함. 그럼에도 가독성·일관성 관점에서 진행: `GameManager.SetMode()`도 이미 "인스턴스 메서드가 static 필드를 바꾸는" 구조라, `MirrorGizmo`도 정확히 같은 모양(`s_Mode` static 필드, `Mode`/`ModeChanged` static, `SetMode()`는 `ApplyMode()`에서 인스턴스 소유 `_handles`를 건드려야 하니 인스턴스 메서드로 유지)으로 맞추면 두 클래스가 같은 문법으로 읽혀 한쪽을 이해하면 다른 쪽도 바로 이해됨. `GizmoModeToggle`도 `Mode` 읽기·`ModeChanged` 구독은 static으로, `SetMode()` 호출만 `_gizmo` 인스턴스로 남김.

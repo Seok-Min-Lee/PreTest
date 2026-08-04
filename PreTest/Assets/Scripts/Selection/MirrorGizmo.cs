@@ -7,9 +7,10 @@ public class MirrorGizmo : MonoBehaviour
     [SerializeField] private LayerMask _gizmoHandleLayerMask;
     [SerializeField] private MirrorSelectionController _selectionController;
 
+    private static GizmoHandleKind s_Mode = GizmoHandleKind.Move;
+
     private Camera _camera;
     private GizmoHandle[] _handles;
-    private GizmoHandleKind _mode = GizmoHandleKind.Move;
     private PlacedMirror _target;
     private GizmoHandleKind? _draggingHandle;
     private Plane _dragPlane;
@@ -19,8 +20,8 @@ public class MirrorGizmo : MonoBehaviour
     private Vector3 _rotateStartDirection;
     private Quaternion _rotateStartRotation;
 
-    public GizmoHandleKind Mode => _mode;
-    public event Action<GizmoHandleKind> ModeChanged;
+    public static GizmoHandleKind Mode => s_Mode;
+    public static event Action<GizmoHandleKind> ModeChanged;
 
     private void Awake()
     {
@@ -104,21 +105,21 @@ public class MirrorGizmo : MonoBehaviour
 
     public void SetMode(GizmoHandleKind mode)
     {
-        if (_mode == mode)
+        if (s_Mode == mode)
         {
             return;
         }
 
-        _mode = mode;
+        s_Mode = mode;
         ApplyMode();
-        ModeChanged?.Invoke(_mode);
+        ModeChanged?.Invoke(s_Mode);
     }
 
     private void ApplyMode()
     {
         foreach (GizmoHandle handle in _handles)
         {
-            handle.gameObject.SetActive(handle.Kind == _mode);
+            handle.gameObject.SetActive(handle.Kind == s_Mode);
         }
     }
 
