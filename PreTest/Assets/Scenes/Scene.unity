@@ -7561,6 +7561,50 @@ PrefabInstance:
       propertyPath: m_Name
       value: Laser
       objectReference: {fileID: 0}
+    - target: {fileID: 5661412750615398214, guid: 326d584d2e97fd448b52e41ad89f7cc1, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6175385446137524000, guid: 326d584d2e97fd448b52e41ad89f7cc1, type: 3}
+      propertyPath: _defaultColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6175385446137524000, guid: 326d584d2e97fd448b52e41ad89f7cc1, type: 3}
+      propertyPath: _defaultColor.g
+      value: 5.3403134
+      objectReference: {fileID: 0}
+    - target: {fileID: 6175385446137524000, guid: 326d584d2e97fd448b52e41ad89f7cc1, type: 3}
+      propertyPath: _defaultColor.r
+      value: 5.3403134
+      objectReference: {fileID: 0}
+    - target: {fileID: 6175385446137524000, guid: 326d584d2e97fd448b52e41ad89f7cc1, type: 3}
+      propertyPath: _failureColor.b
+      value: 4.0156865
+      objectReference: {fileID: 0}
+    - target: {fileID: 6175385446137524000, guid: 326d584d2e97fd448b52e41ad89f7cc1, type: 3}
+      propertyPath: _failureColor.g
+      value: 4.0156865
+      objectReference: {fileID: 0}
+    - target: {fileID: 6175385446137524000, guid: 326d584d2e97fd448b52e41ad89f7cc1, type: 3}
+      propertyPath: _failureColor.r
+      value: 12.047059
+      objectReference: {fileID: 0}
+    - target: {fileID: 6175385446137524000, guid: 326d584d2e97fd448b52e41ad89f7cc1, type: 3}
+      propertyPath: _successColor.b
+      value: 1.0039216
+      objectReference: {fileID: 0}
+    - target: {fileID: 6175385446137524000, guid: 326d584d2e97fd448b52e41ad89f7cc1, type: 3}
+      propertyPath: _successColor.g
+      value: 6.023529
+      objectReference: {fileID: 0}
+    - target: {fileID: 6175385446137524000, guid: 326d584d2e97fd448b52e41ad89f7cc1, type: 3}
+      propertyPath: _successColor.r
+      value: 1.0039216
+      objectReference: {fileID: 0}
+    - target: {fileID: 6175385446137524000, guid: 326d584d2e97fd448b52e41ad89f7cc1, type: 3}
+      propertyPath: _hittableLayers.m_Bits
+      value: 823
+      objectReference: {fileID: 0}
     - target: {fileID: 6571296354767720177, guid: 326d584d2e97fd448b52e41ad89f7cc1, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.68

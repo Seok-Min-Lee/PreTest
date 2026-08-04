@@ -1,7 +1,9 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class LaserEmitter : MonoBehaviour
 {
+    private static readonly int s_EmissionColorId = Shader.PropertyToID("_EmissionColor");
+
     private const int MaxReflectionCount = 10;
     private const float MaxRayDistance = 100f;
     private const float SelfCollisionOffset = 0.001f;
@@ -10,12 +12,17 @@ public class LaserEmitter : MonoBehaviour
 
     [SerializeField] private Transform _muzzle;
     [SerializeField] private LineRenderer _lineRenderer;
+    [SerializeField, ColorUsage(true, true)] private Color _defaultColor = new Color(2f, 0.2f, 0.2f, 1f);
+    [SerializeField, ColorUsage(true, true)] private Color _successColor = new Color(0f, 2f, 0f, 1f);
+    [SerializeField, ColorUsage(true, true)] private Color _failureColor = new Color(0.15f, 0f, 0f, 1f);
 
     // GizmoHandle 레이어(Mirror 조작용 기즈모)는 퍼즐 판정과 무관하므로 레이저 충돌에서 제외.
     [SerializeField] private LayerMask _hittableLayers = ~(1 << GizmoHandleLayer);
 
     private readonly Vector3[] _linePositions = new Vector3[MaxReflectionCount + 2];
     private int _linePositionCount;
+    private LaserResult _resultThisFrame;
+    private MaterialPropertyBlock _propertyBlock;
 
     private void Reset()
     {
@@ -25,6 +32,8 @@ public class LaserEmitter : MonoBehaviour
 
     private void Awake()
     {
+        _propertyBlock = new MaterialPropertyBlock();
+
         if (_lineRenderer == null)
         {
             return;
@@ -52,6 +61,7 @@ public class LaserEmitter : MonoBehaviour
             if (!Physics.Raycast(origin, direction, out RaycastHit hit, MaxRayDistance, _hittableLayers))
             {
                 AddLinePosition(origin + direction * MaxRayDistance);
+                _resultThisFrame = reflectionCount >= MaxReflectionCount ? LaserResult.Failure : LaserResult.Default;
                 return;
             }
 
@@ -70,9 +80,15 @@ public class LaserEmitter : MonoBehaviour
             }
 
             ILaserHitReceiver receiver = hit.collider.GetComponent<ILaserHitReceiver>();
+
             if (receiver != null)
             {
                 receiver.OnLaserHit();
+                _resultThisFrame = LaserResult.Success;
+            }
+            else
+            {
+                _resultThisFrame = reflectionCount >= MaxReflectionCount ? LaserResult.Failure : LaserResult.Default;
             }
 
             return;
@@ -94,5 +110,24 @@ public class LaserEmitter : MonoBehaviour
 
         _lineRenderer.positionCount = _linePositionCount;
         _lineRenderer.SetPositions(_linePositions);
+
+        ApplyResultColor();
+    }
+
+    private void ApplyResultColor()
+    {
+        Color color = _defaultColor;
+
+        if (_resultThisFrame == LaserResult.Success)
+        {
+            color = _successColor;
+        }
+        else if (_resultThisFrame == LaserResult.Failure)
+        {
+            color = _failureColor;
+        }
+
+        _propertyBlock.SetColor(s_EmissionColorId, color);
+        _lineRenderer.SetPropertyBlock(_propertyBlock);
     }
 }

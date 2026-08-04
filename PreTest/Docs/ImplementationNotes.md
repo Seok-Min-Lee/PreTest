@@ -8,6 +8,12 @@
 
 볼록 콜라이더는 항상 진입면(레이저 방향과 반대인 면)만 히트되므로 `Vector3.Dot(direction, hit.normal)` 비교만으로는 앞/뒷면을 구분할 수 없음. 대신 `ILaserReflector.ReflectiveNormal`(반사체가 정의한 정면 벡터)과 `hit.normal`을 임계값(`FrontFaceDotThreshold`) 기반으로 비교하여, 반사체가 설계한 정면 방향과 일치할 때만 반사되도록 처리.
 
+### 레이저 궤적 색상 피드백 — `LineRenderer.startColor`가 아닌 `_EmissionColor`
+
+처음엔 `LineRenderer.startColor`/`endColor`(버텍스 컬러)로 판정 결과를 표시하려 했으나, 실제 게임뷰에는 반영되지 않는 문제가 있었음 — 원인은 Laser 머티리얼(`Assets/Materials/Laser/Laser.mat`)이 URP `Lit` 셰이더를 쓰는데, 이 셰이더가 버텍스 컬러를 아예 읽지 않고, 눈에 보이는 빛도 `_BaseColor`가 아니라 HDR `_EmissionColor`(블룸)가 만들어내고 있었기 때문. `MirrorGhost`(`Assets/Scripts/Placement/MirrorGhost.cs`)가 이미 쓰던 `MaterialPropertyBlock` 패턴을 그대로 가져와 `_EmissionColor`를 직접 덮어쓰는 방식으로 교체 — 머티리얼 인스턴스를 새로 만들지 않아 여러 `LaserEmitter`가 있어도 서로 영향 없음.
+
+판정 결과는 `LaserResult`(`Default`/`Success`/`Failure`) 3단계로 표현. `SimulateLaser()`의 종료 지점(허공으로 빠짐 / 반사체가 아닌 대상에 도달)에서 `reflectionCount`가 `MaxReflectionCount`에 도달했는지로 `Failure`(더 이상 반사 기회가 없음)와 `Default`(아직 기회가 남음)를 구분하고, `ILaserHitReceiver`에 도달하면 `Success`. 세 색상(`_defaultColor`/`_successColor`/`_failureColor`) 모두 `[ColorUsage(true, true)]`로 Inspector에서 HDR 강도까지 조절 가능하게 노출.
+
 ## Priority 2: 거울 배치 및 조작 시스템
 
 ### 오브젝트 풀링과 ActiveCount

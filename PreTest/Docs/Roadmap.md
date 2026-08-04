@@ -11,6 +11,7 @@
     - 레이저 안전장치: Self-Collision 방지 오프셋 적용 및 앞/뒷면 충돌 판별.
     - `ILaserReflector` 인터페이스 정의 및 `MirrorController` 구현: 반사체 타입 확장을 대비한 디커플링.
     - `ILaserHitReceiver` 인터페이스 정의 및 `LaserReceiver` 구현 (`LateUpdate` 기반 `isHitThisFrame` 자동 복귀).
+    - 레이저 궤적 색상으로 판정 결과 시각 피드백. — ✅ `LaserEmitter`가 `LaserResult`(기본/성공/실패)를 계산해 `MaterialPropertyBlock`으로 `_EmissionColor`를 덮어씀. 세 색상 모두 Inspector에서 HDR로 조절 가능.
 - **목표:** 거울이 없어도 레이저가 벽에 부딪혀 꺾이고 수신기를 켰다 끄는 기본 동작이 완벽히 작동하는지 확인.
 
 ### 🟡 Priority 2: 거울 배치 및 조작 시스템 (핵심 UX) — ✅ 완료
