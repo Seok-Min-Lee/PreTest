@@ -6,6 +6,7 @@ public class CameraViewController : MonoBehaviour
 {
     [SerializeField] private float _rotationSpeed = 0.2f;
     [SerializeField] private float _zoomSpeed = 0.02f;
+    [SerializeField] private float _panSpeed = 0.02f;
     [SerializeField] private float _minPitch = -80f;
     [SerializeField] private float _maxPitch = 80f;
 
@@ -43,6 +44,7 @@ public class CameraViewController : MonoBehaviour
 
         HandleRotation();
         HandleZoom();
+        HandlePan();
     }
 
     private void HandleRotation()
@@ -70,5 +72,16 @@ public class CameraViewController : MonoBehaviour
         }
 
         transform.position += transform.forward * (scroll * _zoomSpeed);
+    }
+
+    private void HandlePan()
+    {
+        if (!Mouse.current.middleButton.isPressed)
+        {
+            return;
+        }
+
+        Vector2 delta = Mouse.current.delta.ReadValue();
+        transform.position -= (transform.right * delta.x + transform.up * delta.y) * _panSpeed;
     }
 }

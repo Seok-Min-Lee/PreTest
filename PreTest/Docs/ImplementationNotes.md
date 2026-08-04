@@ -88,6 +88,8 @@ Edit 모드라도 선택된 거울이 없으면 Inspector InputField를 편집 �
 
 이동 없이 회전+dolly만 있다 보니 사용자가 지형에서 완전히 벗어난 뷰로 가버리면 되돌아올 방법이 없는 문제가 있어, `Awake()`에서 씬에 배치된 초기 Position/Rotation을 그대로 기억해뒀다가 복귀시키는 `public OnClickResetView()`를 추가. 좌측 상단 `Camera Reset Button`에 연결했는데, 이 버튼 GameObject는 씬에 Image만 추가되고 실제 `Button` 컴포넌트가 빠져 있어서 클릭이 전혀 안 되는 상태였음 — `UnityEngine.UI.Button` 컴포넌트를 추가하고 기존 아이콘 Image를 `m_TargetGraphic`으로 연결한 뒤, 다른 버튼들과 같은 방침대로 `OnClick`을 씬에서 `CameraViewController.OnClickResetView`로 직접 연결.
 
+이후 휠 버튼(middle click) 드래그로 화면을 평행 이동하는 `HandlePan()`을 추가. 카메라의 로컬 `right`/`up` 축 기준으로 마우스 델타의 **반대 방향**으로 이동시켜 "화면을 손으로 잡고 끄는" 느낌을 냄(Blender/Maya 등의 팬 컨벤션과 동일). 이동이 생겼지만 `OnClickResetView()`가 이미 `_initialPosition`을 함께 복원하므로 별도 처리 없이 기존 Reset View 버튼으로 팬한 위치도 그대로 복귀됨.
+
 ### MirrorPool 컬렉션 구조 — 활성 List + 비활성 Queue
 
 기존엔 `MirrorPool`이 비활성 거울만 `Stack<PlacedMirror>`로 들고 있어서, Save가 필요로 하는 "지금 배치된 거울 전체 순회"가 불가능했음. 비활성 재사용 방식을 LIFO(`Stack`)에서 FIFO(`Queue`)로 바꾸고, 활성 거울을 별도 `List<PlacedMirror>`로 함께 추적해 `ActiveMirrors`로 읽기 전용 노출 — `PlacedMirror.ActiveCount`(개수만 세는 기존 정적 카운터)와 역할을 분리해 "몇 개인지"와 "누가 활성 상태인지"를 각각 책임지도록 함.

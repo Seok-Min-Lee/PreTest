@@ -46,7 +46,7 @@
     - `SaveManager`/`LoadManager` 구현: JSON 직렬화(`JsonUtility`)를 통한 거울 배치 정보 `Save`/`Load` 연동. — ✅ `SaveManager`(버튼 클릭 시 즉시 저장)와 `LoadManager`(`Init` 부트스트랩 씬에서 앱 실행 시 1회 자동 로드)로 구현. `Clear`는 런타임 배치만 초기화(저장 파일은 그대로 두고 별도 `Save`를 눌러야 영구 반영)하는 동작이라 `MirrorSelectionController.OnClickClear`로 구현.
     - 선택된 거울 삭제 기능 (`[Delete]` 버튼 및 `Delete` 단축키). — ✅ `MirrorSelectionController.OnClickDelete`/`Keyboard.deleteKey`로 구현.
     - InputField 포커스 시 단축키 오작동 방지 예외 처리(`EventSystem` 연동). — ✅ `InputFocusGuard`로 구현.
-    - 3D L자 지형 관람을 위한 마우스 Orbit(회전) 및 Zoom 카메라 컨트롤러 추가. — ✅ `CameraViewController`로 구현. 좌측 상단 `Camera Reset Button`으로 초기 위치/회전 복귀 기능도 함께 추가.
+    - 3D L자 지형 관람을 위한 마우스 Orbit(회전) 및 Zoom 카메라 컨트롤러 추가. — ✅ `CameraViewController`로 구현. 좌측 상단 `Camera Reset Button`으로 초기 위치/회전 복귀 기능도 함께 추가. 휠 버튼 드래그로 화면을 평행 이동하는 Pan도 추가.
     - 우측 상단 `Exit Button`으로 애플리케이션 종료(기존 미사용 `Setting Button`을 재활용). — ✅ `GameManager.OnClickExit`로 구현.
     - `DOTween` 라이브러리 도입 및 모드 인디케이터 아이콘 알파 루프 모션 추가. — ✅ 범용 재사용 컴포넌트 `CanvasGroupAlphaLoop`(`Assets/Scripts/Motions/`)로 구현, `[RequireComponent(typeof(CanvasGroup))]`로 의존성 강제. min/max 알파와 duration은 Inspector에서 조절 가능.
 

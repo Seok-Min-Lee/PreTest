@@ -397,7 +397,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _rotationSpeed: 0.2
-  _zoomSpeed: 0.2
+  _zoomSpeed: 0.4
+  _panSpeed: 0.02
   _minPitch: -80
   _maxPitch: 80
 --- !u!1 &300010
