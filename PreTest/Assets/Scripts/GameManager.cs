@@ -60,6 +60,15 @@ public class GameManager : MonoBehaviour
         SetMode(AppMode.Play);
     }
 
+    public void OnClickExit()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
     private void SetMode(AppMode mode)
     {
         if (_mode == mode)

@@ -5153,7 +5153,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Setting
+  m_text: Exit
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6c1062cfc589c42478fa0b7f39fe187a, type: 2}
   m_sharedMaterial: {fileID: -82527929076130859, guid: 6c1062cfc589c42478fa0b7f39fe187a, type: 2}
@@ -5703,7 +5703,7 @@ GameObject:
   - component: {fileID: 841969394}
   - component: {fileID: 841969396}
   m_Layer: 5
-  m_Name: Setting Button
+  m_Name: Exit Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5750,7 +5750,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: dd5271ff3c4bfba448d7ead18905c62a, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 1300cd54c95088d45b3d7bb4a35e2e7b, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5811,7 +5811,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 841969394}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 500102}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: OnClickExit
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &855551217
 GameObject:
   m_ObjectHideFlags: 0
@@ -9958,14 +9970,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.5411765, b: 0.5411765, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 913830109, guid: c914d524580bae9408a27aa1ad325735, type: 3}
+  m_Sprite: {fileID: 1709301906, guid: c914d524580bae9408a27aa1ad325735, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

@@ -125,3 +125,7 @@ Clear는 처음엔 Save/Load와 한 세트로 묶여 있던 Roadmap 항목이라
 ### Delete — 버튼과 단축키가 같은 메서드로 수렴
 
 `[Delete]` 버튼(`OnClickDelete`)과 `Delete` 키 단축키(`Keyboard.current.deleteKey`, `MirrorGizmo`의 W/E 처리와 동일하게 `InputFocusGuard.IsInputFieldFocused()`로 InputField 편집 중엔 무시)가 모두 같은 `DeleteSelected()`로 수렴. 삭제 시 `Select(null)`을 **먼저** 호출해 `SelectionChanged`가 먼저 발행되게 한 뒤(→ `MirrorGizmo`/`MirrorInspectorController`가 이번 프레임에 이미 `_target == null`로 반응) `MirrorPool.Release()`로 실제 반환 — 죽은 참조가 한 프레임이라도 남지 않도록 순서를 고정.
+
+### Exit Button — 에디터/빌드 분기
+
+원래 기능 없이 자리만 차지하던 `Setting Button`을 `Exit Button`으로 재활용. `Application.Quit()`은 에디터의 Play 모드에서는 아무 동작도 하지 않아(빌드에서만 실제로 종료됨) 에디터에서 테스트할 때 버튼이 고장난 것처럼 보이는 문제가 있음 — `GameManager.OnClickExit()`에서 `#if UNITY_EDITOR`로 분기해 에디터에서는 `EditorApplication.isPlaying = false`로 Play 모드를 종료하고, 빌드에서만 `Application.Quit()`을 호출하도록 처리.
