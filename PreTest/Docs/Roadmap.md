@@ -23,7 +23,7 @@
     - `MirrorPool`을 통한 오브젝트 풀링: `Instantiate`/`Destroy` 대신 `SetActive(true/false)`로 재사용.
     - `Floor` 레이어 콜라이더 전체에 대해 격자 스냅 없는 자유 배치: `Add Mirror` → 배치 모드 진입 → 표면 법선 정렬 고스트 프리뷰 → 클릭으로 확정.
     - 배치 모드 취소: 마우스 우클릭 또는 `Esc` 키로 고스트를 숨기고 즉시 종료.
-    - 거울 최대 100개 제한 및 좌측 하단 현재/최대 개수 표시.
+    - 거울 최대 100개 제한 및 좌측 하단 현재/최대 개수 표시. — ✅ 최대 개수 도달 시 `Debug.Log` 안내와 개수 텍스트 빨간색 깜빡임 피드백도 추가. `MirrorPlacementController.MaxMirrorCountReached` 이벤트를 `MirrorCountDisplay`가 구독해 DOTween으로 처리.
     - `MirrorGizmo`를 통한 선택 거울 조작: 축별 핸들(Move X/Y/Z 큐브 + Rotate X/Y/Z 링), `Edit Option` 버튼과 양방향 동기화.
     - `Floor`/`Mirror`/`GizmoHandle` 레이어 분리로 배치·선택·레이저 레이캐스트 간 상호 간섭 방지.
 
@@ -50,6 +50,7 @@
     - 3D L자 지형 관람을 위한 마우스 Orbit(회전) 및 Zoom 카메라 컨트롤러 추가. — ✅ `CameraViewController`로 구현. 좌측 상단 `Camera Reset Button`으로 초기 위치/회전 복귀 기능도 함께 추가. 휠 버튼 드래그로 화면을 평행 이동하는 Pan도 추가.
     - 우측 상단 `Exit Button`으로 애플리케이션 종료(기존 미사용 `Setting Button`을 재활용). — ✅ `GameManager.OnClickExit`로 구현.
     - `DOTween` 라이브러리 도입 및 모드 인디케이터 아이콘 알파 루프 모션 추가. — ✅ 범용 재사용 컴포넌트 `CanvasGroupAlphaLoop`(`Assets/Scripts/Motions/`)로 구현, `[RequireComponent(typeof(CanvasGroup))]`로 의존성 강제. min/max 알파와 duration은 Inspector에서 조절 가능.
+    - 레이저 최대 반사 횟수·거울 최대 배치 개수를 한 곳에서 조절. — ✅ `GameConfig`(ScriptableObject)로 통합, `Assets/Resources/`에 두고 정적 싱글톤(`GameConfig.Instance`)으로 로드해 별도 필드 연결 없이 어디서든 참조.
 
 ### ⚫ Priority 5: 최종 검증 및 문서화 (제출 준비)
 

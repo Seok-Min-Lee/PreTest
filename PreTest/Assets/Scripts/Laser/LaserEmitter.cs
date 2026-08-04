@@ -4,7 +4,6 @@ public class LaserEmitter : MonoBehaviour
 {
     private static readonly int s_EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
-    private const int MaxReflectionCount = 10;
     private const float MaxRayDistance = 100f;
     private const float SelfCollisionOffset = 0.001f;
     private const float FrontFaceDotThreshold = 0.9f;
@@ -19,7 +18,8 @@ public class LaserEmitter : MonoBehaviour
     // GizmoHandle 레이어(Mirror 조작용 기즈모)는 퍼즐 판정과 무관하므로 레이저 충돌에서 제외.
     [SerializeField] private LayerMask _hittableLayers = ~(1 << GizmoHandleLayer);
 
-    private readonly Vector3[] _linePositions = new Vector3[MaxReflectionCount + 2];
+    private int _maxReflectionCount;
+    private Vector3[] _linePositions;
     private int _linePositionCount;
     private LaserResult _resultThisFrame;
     private MaterialPropertyBlock _propertyBlock;
@@ -32,6 +32,8 @@ public class LaserEmitter : MonoBehaviour
 
     private void Awake()
     {
+        _maxReflectionCount = GameConfig.Instance.MaxReflectionCount;
+        _linePositions = new Vector3[_maxReflectionCount + 2];
         _propertyBlock = new MaterialPropertyBlock();
 
         if (_lineRenderer == null)
@@ -56,12 +58,12 @@ public class LaserEmitter : MonoBehaviour
         Vector3 origin = _muzzle.position + direction * SelfCollisionOffset;
         AddLinePosition(_muzzle.position);
 
-        for (int reflectionCount = 0; reflectionCount <= MaxReflectionCount; reflectionCount++)
+        for (int reflectionCount = 0; reflectionCount <= _maxReflectionCount; reflectionCount++)
         {
             if (!Physics.Raycast(origin, direction, out RaycastHit hit, MaxRayDistance, _hittableLayers))
             {
                 AddLinePosition(origin + direction * MaxRayDistance);
-                _resultThisFrame = reflectionCount >= MaxReflectionCount ? LaserResult.Failure : LaserResult.Default;
+                _resultThisFrame = reflectionCount >= _maxReflectionCount ? LaserResult.Failure : LaserResult.Default;
                 return;
             }
 
@@ -70,7 +72,7 @@ public class LaserEmitter : MonoBehaviour
             ILaserReflector reflector = hit.collider.GetComponent<ILaserReflector>();
             bool isFrontFaceHit = reflector != null
                 && Vector3.Dot(hit.normal, reflector.ReflectiveNormal) > FrontFaceDotThreshold;
-            bool canReflect = isFrontFaceHit && reflectionCount < MaxReflectionCount;
+            bool canReflect = isFrontFaceHit && reflectionCount < _maxReflectionCount;
 
             if (canReflect)
             {
@@ -88,7 +90,7 @@ public class LaserEmitter : MonoBehaviour
             }
             else
             {
-                _resultThisFrame = reflectionCount >= MaxReflectionCount ? LaserResult.Failure : LaserResult.Default;
+                _resultThisFrame = reflectionCount >= _maxReflectionCount ? LaserResult.Failure : LaserResult.Default;
             }
 
             return;

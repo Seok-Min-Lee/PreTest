@@ -26,7 +26,11 @@
 
 ### 거울 개수 표시와 Add Mirror 버튼
 
-좌측 하단 "현재 수 / 최대 수" 텍스트는 `MirrorCountDisplay`가 `PlacedMirror.ActiveCountChanged`(정적 이벤트, `OnEnable`/`OnDisable`에서 발생) 구독해서 갱신. `MirrorPlacementController.MaxMirrorCount`도 표시를 위해 `public`으로 열어둠. 도달 시 `Add Mirror` 버튼을 `interactable = false`로 비활성화하는 처리도 한때 있었으나, `BeginPlacement`의 조기 반환으로 이미 기능적으로 막혀 있고 이 카운트 텍스트가 시각적 피드백을 대신하므로 제거함.
+좌측 하단 "현재 수 / 최대 수" 텍스트는 `MirrorCountDisplay`가 `PlacedMirror.ActiveCountChanged`(정적 이벤트, `OnEnable`/`OnDisable`에서 발생) 구독해서 갱신. 최대 개수는 `GameConfig.Instance.MaxMirrorCount`를 직접 참조(아래 "설정값을 한 곳에서 관리" 참고). 도달 시 `Add Mirror` 버튼을 `interactable = false`로 비활성화하는 처리도 한때 있었으나, `BeginPlacement`의 조기 반환으로 이미 기능적으로 막혀 있고 이 카운트 텍스트가 시각적 피드백을 대신하므로 제거함.
+
+### 최대 개수 도달 피드백 — 이벤트로 디커플링
+
+`MirrorPlacementController.BeginPlacement()`가 최대 개수 도달로 조기 반환할 때 `Debug.Log` 안내와 함께 `MirrorCountDisplay`의 개수 텍스트를 빨갛게 깜빡여 시각적으로도 알려줌. 처음엔 `MirrorPlacementController`가 `MirrorCountDisplay`를 직접 참조해 `FlashMaxReached()`를 호출했으나, `MirrorSelectionController.SelectionChanged`/`GameManager.ModeChanged` 등 이 프로젝트 전반의 관례(발행 쪽은 이벤트만 노출하고, 구독 쪽이 알아서 반응)와 맞지 않아 `MirrorPlacementController.MaxMirrorCountReached` 이벤트로 교체 — `MirrorCountDisplay`가 `OnEnable`/`OnDisable`에서 구독·해제하고 색상 트윈은 스스로 처리. 이 프로젝트에 설치된 DOTween엔 TextMeshPro 전용 모듈이 없어 `.DOColor()` 같은 확장 메서드를 못 쓰므로, `DOTween.To(() => _countText.color, ...)` 형태의 범용 값 트윈으로 `_countText.color`를 직접 조작. `SetLoops(4, LoopType.Yoyo)`로 원래색→빨강→원래색→빨강→원래색(2회 깜빡) 후 정확히 원래 색으로 종료되고, 연타 시 기존 트윈을 `Kill()`하고 색을 리셋한 뒤 새로 시작해 겹치지 않게 함.
 
 ### Gizmo 축별 핸들 — Move/Rotate 계산 방식
 
@@ -149,3 +153,11 @@ Clear는 처음엔 Save/Load와 한 세트로 묶여 있던 Roadmap 항목이라
 처음엔 이 로직을 `ModeIndicator`에 직접 넣었으나, `ModeIndicator.ApplyColor()`가 `Image.color`를 통째로 덮어써서 알파를 함께 건드리는 트윈과 매 모드 전환마다 충돌하는 문제가 있었음 — `Image.color`의 알파 대신 별도 `CanvasGroup.alpha`로 불투명도를 분리하니 색상(모드 전환)과 알파(루프 모션)가 서로 독립적인 채널이 되어 충돌이 사라짐. 이 김에 알파 루프 자체도 `ModeIndicator`(모드에 따른 색상·텍스트 표시 책임)에서 완전히 분리해 `CanvasGroupAlphaLoop`라는 범용 컴포넌트로 뽑아냄 — 어떤 UI 요소든 `CanvasGroup`만 붙어 있으면 재사용 가능해짐. 모션 관련 컴포넌트가 늘어날 것을 대비해 `Assets/Scripts/Motions/` 폴더로 분리 관리하기 시작.
 
 `[RequireComponent(typeof(CanvasGroup))]`로 이 컴포넌트가 `CanvasGroup` 없이는 존재할 수 없도록 강제하고, `_canvasGroup` 필드는 씬에서 수동으로 드래그하는 대신 `Awake()`에서 `GetComponent<CanvasGroup>()`으로 캐싱 — `RequireComponent`가 있으니 항상 성공이 보장되고, Inspector엔 실제로 조절해야 하는 `_minAlpha`/`_maxAlpha`/`_duration`만 노출됨. `OnDestroy()`에서 트윈을 `Kill()`해 오브젝트 파괴 시 DOTween 콜백이 죽은 대상에 접근하는 것을 방지.
+
+### `GameConfig` — 설정값을 한 곳에서 관리
+
+`LaserEmitter`의 최대 반사 횟수와 `MirrorPlacementController`의 최대 거울 개수가 각자 다른 클래스에 박힌 `const`였음 — 값을 바꾸려면 코드를 고쳐야 했고, 같은 값을 참조하는 `MirrorCountDisplay`/`GameManager`(Load 시 캡 체크)는 `MirrorPlacementController.MaxMirrorCount`를 정적으로 갖다 쓰는 간접 참조였음. 이 둘을 `GameConfig`(`ScriptableObject`) 하나로 옮겨 값 하나만 바꾸면 모든 참조처에 즉시 반영되게 함.
+
+처음엔 각 소비 클래스가 `[SerializeField] private GameConfig _gameConfig;`를 들고 씬에서 같은 에셋을 4곳에 일일이 드래그하는 방식으로 갔으나, 반복 연결이 번거롭다는 이야기가 나와 재검토. "이미 있는 `Init` 씬의 `LoadManager`(`DontDestroyOnLoad` 싱글톤)에 얹으면 어떨까"도 고려했지만 기각 — `LoadManager`는 "저장 데이터를 읽어 씬 전환 간 들고 있다가 넘겨준다"는 책임 하나만 가진 클래스라 레이저/거울 같은 게임 밸런스 값을 얹으면 책임이 섞이고, 무엇보다 `LoadManager.Instance`는 `Init`을 거쳐야만 존재하는데 이 값들은 `Init` 여부와 무관하게 항상 필요한 핵심 설정이라(개발 중 `Scene`을 바로 재생하는 흔한 워크플로에서 곧바로 깨짐) 가용성 문제가 있었음.
+
+최종적으로 `GameConfig` 자신을 `Assets/Resources/`에 두고 `GameConfig.Instance`(내부적으로 `Resources.Load<GameConfig>("GameConfig")`, 최초 1회만 로드해 캐싱)로 접근하는 정적 싱글톤 에셋 패턴을 채택 — 어떤 스크립트도 `[SerializeField]` 참조나 씬 내 위치와 무관하게 `GameConfig.Instance.MaxMirrorCount`처럼 바로 쓸 수 있어 연결 자체가 필요 없어짐. 이미 `Assets/Resources/DOTweenSettings.asset`이 같은 폴더 관례를 쓰고 있어 이 프로젝트에 낯선 패턴도 아님. `LaserEmitter`는 `_maxReflectionCount`로 배열 크기(`_linePositions`)를 잡는데, 필드 초기화 시점엔 아직 `GameConfig.Instance`를 참조할 이유가 없어(정적 프로퍼티라 시점 문제 없음) 그대로 `Awake()`에서 읽어와 배열을 할당.

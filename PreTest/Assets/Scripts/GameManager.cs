@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
 
         foreach (MirrorSaveData data in saveData.Mirrors)
         {
-            if (PlacedMirror.ActiveCount >= MirrorPlacementController.MaxMirrorCount)
+            if (PlacedMirror.ActiveCount >= GameConfig.Instance.MaxMirrorCount)
             {
                 break;
             }

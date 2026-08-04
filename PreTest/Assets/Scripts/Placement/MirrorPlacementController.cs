@@ -1,11 +1,10 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class MirrorPlacementController : MonoBehaviour
 {
-    public const int MaxMirrorCount = 100;
-
     [SerializeField] private GameManager _gameManager;
     [SerializeField] private MirrorGhost _ghost;
     [SerializeField] private MirrorPool _mirrorPool;
@@ -18,6 +17,7 @@ public class MirrorPlacementController : MonoBehaviour
     private Quaternion _targetRotation;
 
     public bool IsPlacing => _isPlacing;
+    public event Action MaxMirrorCountReached;
 
     private void Awake()
     {
@@ -50,8 +50,10 @@ public class MirrorPlacementController : MonoBehaviour
             return;
         }
 
-        if (PlacedMirror.ActiveCount >= MaxMirrorCount)
+        if (PlacedMirror.ActiveCount >= GameConfig.Instance.MaxMirrorCount)
         {
+            Debug.Log($"[Mirror] 최대 개수({GameConfig.Instance.MaxMirrorCount})에 도달해 더 이상 배치할 수 없습니다.");
+            MaxMirrorCountReached?.Invoke();
             return;
         }
 
