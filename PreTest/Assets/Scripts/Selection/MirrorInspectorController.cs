@@ -23,7 +23,6 @@ public class MirrorInspectorController : MonoBehaviour
         _selectionController.SelectionChanged += HandleSelectionChanged;
         _gameManager.ModeChanged += HandleModeChanged;
 
-        ApplyInteractable(_gameManager.Mode);
         HandleSelectionChanged(_selectionController.SelectedMirror);
     }
 
@@ -46,6 +45,7 @@ public class MirrorInspectorController : MonoBehaviour
     private void HandleSelectionChanged(PlacedMirror mirror)
     {
         _target = mirror;
+        UpdateInteractable();
 
         if (_target == null)
         {
@@ -58,12 +58,12 @@ public class MirrorInspectorController : MonoBehaviour
 
     private void HandleModeChanged(AppMode mode)
     {
-        ApplyInteractable(mode);
+        UpdateInteractable();
     }
 
-    private void ApplyInteractable(AppMode mode)
+    private void UpdateInteractable()
     {
-        bool interactable = mode == AppMode.Edit;
+        bool interactable = _gameManager.Mode == AppMode.Edit && _target != null;
 
         _positionXField.interactable = interactable;
         _positionYField.interactable = interactable;
@@ -127,7 +127,12 @@ public class MirrorInspectorController : MonoBehaviour
 
     private void ApplyPosition(int axisIndex, string value)
     {
-        if (_target == null || !float.TryParse(value, out float parsed))
+        if (_target == null)
+        {
+            return;
+        }
+
+        if (!float.TryParse(value, out float parsed))
         {
             ForceRefreshFields();
             return;
@@ -141,7 +146,12 @@ public class MirrorInspectorController : MonoBehaviour
 
     private void ApplyRotation(int axisIndex, string value)
     {
-        if (_target == null || !float.TryParse(value, out float parsed))
+        if (_target == null)
+        {
+            return;
+        }
+
+        if (!float.TryParse(value, out float parsed))
         {
             ForceRefreshFields();
             return;

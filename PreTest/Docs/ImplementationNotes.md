@@ -71,3 +71,13 @@ Move 핸들(원점 기준 오프셋 배치)과 Rotate 핸들(원점을 감싸는
 ### Inspector 패널 Close/재오픈
 
 Inspector 하단 `Close Button`으로 패널을 닫고 거울을 클릭하면 다시 열리도록 `InspectorPanelToggle`을 추가. 패널 GameObject(`Inspector`)에 직접 붙이면 꺼진 동안 이 컴포넌트도 같이 비활성화되어 다시 열어줄 이벤트조차 못 받으므로, 항상 켜져 있는 부모 `Canvas`(Sub-Canvas 루트)에 붙여 `OnEnable`/`OnDisable`로 안전하게 구독. 이미 선택된 거울을 다시 클릭한 경우 `MirrorSelectionController.SelectionChanged`는 (선택 대상이 안 바뀌었으므로) 발생하지 않아 재오픈 신호로 못 쓰기 때문에, "클릭"과 "선택 변경"을 분리한 별도의 `MirrorClicked` 이벤트를 추가해 여기에 연결. Close 버튼의 `OnClick`도 다른 버튼들과 같은 방침대로 코드 `AddListener` 없이 `public OnClickClose()`를 씬에서 직접 연결.
+
+### 선택된 거울 없을 때 Inspector InputField 잠금
+
+Edit 모드라도 선택된 거울이 없으면 Inspector InputField를 편집 불가로 막아야 함 — 막지 않으면 빈 필드에 값을 입력하고 `OnEndEdit`가 발생했을 때 `ApplyPosition`/`ApplyRotation`이 `_target == null`인 채로 `ForceRefreshFields()`를 호출해 `_target.transform`에서 NullReferenceException이 나는 실제 버그가 있었음(이전엔 `interactable`이 모드에만 의존해서, 선택 없이도 Edit 모드면 필드가 활성 상태였음). `MirrorInspectorController.UpdateInteractable()`을 모드뿐 아니라 `_target != null`도 함께 확인하도록 바꾸고, 모드 변경 시점(`HandleModeChanged`)과 선택 변경 시점(`HandleSelectionChanged`) 양쪽에서 호출하도록 통일. 방어적으로 `ApplyPosition`/`ApplyRotation`도 `_target == null`이면 `ForceRefreshFields()`를 호출하지 않고 바로 반환하도록 분리 — `interactable`을 끄는 시점에 포커스 중이던 필드가 `OnDeselect`로 `OnEndEdit`를 재진입 호출할 수 있는 경우까지 방지.
+
+## Priority 4: 데이터 영속성 및 편의 기능
+
+### InputField 포커스 중 단축키 오작동 방지
+
+`MirrorGizmo`의 Move/Rotate 전환(`wKey`/`eKey`)과 `MirrorPlacementController`의 배치 취소(`escapeKey`)는 New Input System의 `Keyboard.current`로 물리 키 상태를 직접 폴링하는데, 이 방식은 TMP_InputField가 포커스를 갖고 있어도 자동으로 막히지 않음 — 예를 들어 Inspector의 Name/Description 필드에 "west"라고만 타이핑해도 `w`에서 기즈모가 Move 모드로 전환되는 실제 버그가 있었음. `Assets/Scripts/InputFocusGuard.cs`(정적 유틸리티, `EventSystem.current.currentSelectedGameObject`에 `TMP_InputField`가 붙어있는지로 판별)를 두 스크립트의 키보드 단축키 체크 앞단에 공통으로 적용해 해결. 마우스 기반 취소(우클릭)는 타이핑과 충돌하지 않으므로 가드 대상에서 제외.

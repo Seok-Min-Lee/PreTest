@@ -34,7 +34,7 @@
     - Main Canvas 및 하위 Sub-Canvas(`InspectorPanelGroup`) 구성 (Canvas Rebatching 최적화).
     - `GameManager`를 통한 `Edit` ↔ `Play` 모드 상태 관리 구현: `ModeChanged` 이벤트를 배치/기즈모/버튼 표시가 각각 구독해 게이팅.
     - 선택된 거울의 Position/Rotation/Name/Description을 보여주는 Inspector UI 구현 및 Gizmo와의 **양방향 데이터 바인딩**.
-    - Play 모드 시 Inspector UI를 Read-Only(조회 전용)로 전환.
+    - Play 모드 시, 그리고 선택된 거울이 없을 때 Inspector UI를 Read-Only(조회 전용)로 전환.
     - Inspector 패널 하단 `Close Button`으로 닫고, 거울 클릭 시 다시 열리도록 처리.
     - Button `OnClick`/InputField `OnEndEdit` 등 UI 이벤트는 코드 대신 씬에서 직접 연결하는 방식으로 통일.
 
@@ -45,7 +45,7 @@
 - **주요 작업:**
     - `SaveManager` 구현: JSON 직렬화(`JsonUtility`)를 통한 거울 배치 정보 `Save / Load / Clear` 연동.
     - 선택된 거울 삭제 기능 (`[Delete]` 버튼 및 `Delete` 단축키).
-    - InputField 포커스 시 단축키 오작동 방지 예외 처리(`EventSystem` 연동).
+    - InputField 포커스 시 단축키 오작동 방지 예외 처리(`EventSystem` 연동). — ✅ `InputFocusGuard`로 구현.
     - 3D L자 지형 관람을 위한 마우스 Orbit(회전) 및 Zoom 카메라 컨트롤러 추가.
 
 ### ⚫ Priority 5: 최종 검증 및 문서화 (제출 준비)

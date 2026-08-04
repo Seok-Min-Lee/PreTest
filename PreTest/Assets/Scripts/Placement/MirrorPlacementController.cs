@@ -72,7 +72,13 @@ public class MirrorPlacementController : MonoBehaviour
             return;
         }
 
-        if (Mouse.current.rightButton.wasPressedThisFrame || Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (Mouse.current.rightButton.wasPressedThisFrame)
+        {
+            CancelPlacement();
+            return;
+        }
+
+        if (Keyboard.current.escapeKey.wasPressedThisFrame && !InputFocusGuard.IsInputFieldFocused())
         {
             CancelPlacement();
             return;

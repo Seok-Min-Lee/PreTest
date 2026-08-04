@@ -88,6 +88,11 @@ public class MirrorGizmo : MonoBehaviour
             return;
         }
 
+        if (InputFocusGuard.IsInputFieldFocused())
+        {
+            return;
+        }
+
         if (Keyboard.current.wKey.wasPressedThisFrame)
         {
             SetMode(GizmoHandleKind.Move);
