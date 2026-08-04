@@ -129,3 +129,11 @@ Clear는 처음엔 Save/Load와 한 세트로 묶여 있던 Roadmap 항목이라
 ### Exit Button — 에디터/빌드 분기
 
 원래 기능 없이 자리만 차지하던 `Setting Button`을 `Exit Button`으로 재활용. `Application.Quit()`은 에디터의 Play 모드에서는 아무 동작도 하지 않아(빌드에서만 실제로 종료됨) 에디터에서 테스트할 때 버튼이 고장난 것처럼 보이는 문제가 있음 — `GameManager.OnClickExit()`에서 `#if UNITY_EDITOR`로 분기해 에디터에서는 `EditorApplication.isPlaying = false`로 Play 모드를 종료하고, 빌드에서만 `Application.Quit()`을 호출하도록 처리.
+
+### `CanvasGroupAlphaLoop` — DOTween 도입과 `Motions/` 폴더 분리
+
+모드 인디케이터 아이콘에 알파를 반복시키는 모션을 넣기 위해 `Assets/Plugins/Demigiant/DOTween`을 프로젝트에 추가(설치 과정에서 `ProjectSettings`에 `DOTWEEN` 스크립팅 정의 심볼과 `Assets/Resources/DOTweenSettings.asset`이 자동 생성됨).
+
+처음엔 이 로직을 `ModeIndicator`에 직접 넣었으나, `ModeIndicator.ApplyColor()`가 `Image.color`를 통째로 덮어써서 알파를 함께 건드리는 트윈과 매 모드 전환마다 충돌하는 문제가 있었음 — `Image.color`의 알파 대신 별도 `CanvasGroup.alpha`로 불투명도를 분리하니 색상(모드 전환)과 알파(루프 모션)가 서로 독립적인 채널이 되어 충돌이 사라짐. 이 김에 알파 루프 자체도 `ModeIndicator`(모드에 따른 색상·텍스트 표시 책임)에서 완전히 분리해 `CanvasGroupAlphaLoop`라는 범용 컴포넌트로 뽑아냄 — 어떤 UI 요소든 `CanvasGroup`만 붙어 있으면 재사용 가능해짐. 모션 관련 컴포넌트가 늘어날 것을 대비해 `Assets/Scripts/Motions/` 폴더로 분리 관리하기 시작.
+
+`[RequireComponent(typeof(CanvasGroup))]`로 이 컴포넌트가 `CanvasGroup` 없이는 존재할 수 없도록 강제하고, `_canvasGroup` 필드는 씬에서 수동으로 드래그하는 대신 `Awake()`에서 `GetComponent<CanvasGroup>()`으로 캐싱 — `RequireComponent`가 있으니 항상 성공이 보장되고, Inspector엔 실제로 조절해야 하는 `_minAlpha`/`_maxAlpha`/`_duration`만 노출됨. `OnDestroy()`에서 트윈을 `Kill()`해 오브젝트 파괴 시 DOTween 콜백이 죽은 대상에 접근하는 것을 방지.

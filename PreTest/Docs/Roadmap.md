@@ -48,6 +48,7 @@
     - InputField 포커스 시 단축키 오작동 방지 예외 처리(`EventSystem` 연동). — ✅ `InputFocusGuard`로 구현.
     - 3D L자 지형 관람을 위한 마우스 Orbit(회전) 및 Zoom 카메라 컨트롤러 추가. — ✅ `CameraViewController`로 구현. 좌측 상단 `Camera Reset Button`으로 초기 위치/회전 복귀 기능도 함께 추가.
     - 우측 상단 `Exit Button`으로 애플리케이션 종료(기존 미사용 `Setting Button`을 재활용). — ✅ `GameManager.OnClickExit`로 구현.
+    - `DOTween` 라이브러리 도입 및 모드 인디케이터 아이콘 알파 루프 모션 추가. — ✅ 범용 재사용 컴포넌트 `CanvasGroupAlphaLoop`(`Assets/Scripts/Motions/`)로 구현, `[RequireComponent(typeof(CanvasGroup))]`로 의존성 강제. min/max 알파와 duration은 Inspector에서 조절 가능.
 
 ### ⚫ Priority 5: 최종 검증 및 문서화 (제출 준비)
 
